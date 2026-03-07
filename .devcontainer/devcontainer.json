@@ -1,0 +1,36 @@
+{
+  "name": "K-means",
+  "dockerFile": "Dockerfile",
+  "runArgs": ["--privileged"],
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "java.jdt.ls.java.home": "/usr/lib/jvm/jdk-25.0.2-oracle-x64",
+        "java.configuration.runtimes": [
+            {
+                "name": "JavaSE-25",
+                "path": "/usr/lib/jvm/jdk-25.0.2-oracle-x64",
+                "default": true
+            }
+        ],
+        "java.compile.nullAnalysis.mode": "automatic",
+        "go.gopath": "/go",
+        "go.toolsManagement.checkForUpdates": "proxy",
+        "python.defaultInterpreterPath": "/usr/bin/python3",
+        "python.terminal.activateEnvInSelectedTerminal": true,
+        "poetry.executable": "/usr/local/bin/poetry"
+      },
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "redhat.java",
+        "golang.go",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-vscode.cpptools",
+        "ms-vscode.makefile-tools"
+      ]
+    }
+  },
+  "remoteUser": "root"
+}
