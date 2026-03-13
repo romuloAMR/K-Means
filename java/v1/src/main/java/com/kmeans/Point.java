@@ -12,7 +12,12 @@ public class Point {
         this.dimension = position.length;
     }
 
-    public double distanceTo(Point other) {
+    public Point(Point other) {
+        this.position = other.position.clone();
+        this.dimension = other.dimension;
+    }
+
+    public double sqDistanceTo(Point other) {
         if (this.dimension != other.getDimension()) {
             throw new IllegalArgumentException("The points must have the same dimension.");
         }
@@ -21,56 +26,25 @@ public class Point {
             double diff = this.position[i] - other.getOnePosition(i);
             sum += diff * diff;
         }
-        return Math.sqrt(sum);
+        return sum;
     }
 
-    public Point add(Point other) {
+    public void accumulatedAdd(Point other) {
         if (this.dimension != other.getDimension()) {
             throw new IllegalArgumentException("Dimensions must match for addition.");
         }
-        double[] newCoords = new double[dimension];
         for (int i = 0; i < dimension; i++) {
-            newCoords[i] = this.position[i] + other.getOnePosition(i);
+            this.position[i] += other.getOnePosition(i);
         }
-        return new Point(newCoords);
     }
 
-    public Point subtract(Point other) {
-        if (this.dimension != other.getDimension()) {
-            throw new IllegalArgumentException("Dimensions must match for subtraction.");
-        }
-        double[] newCoords = new double[dimension];
-        for (int i = 0; i < dimension; i++) {
-            newCoords[i] = this.position[i] - other.getOnePosition(i);
-        }
-        return new Point(newCoords);
-    }
-
-    public Point add(double scalar) {        
-        double[] newCoords = new double[dimension];
-        for (int i = 0; i < dimension; i++) {
-            newCoords[i] = this.position[i] + scalar;
-        }
-        return new Point(newCoords);
-    }
-
-    public Point multiply(double scalar) {        
-        double[] newCoords = new double[dimension];
-        for (int i = 0; i < dimension; i++) {
-            newCoords[i] = this.position[i] * scalar;
-        }
-        return new Point(newCoords);
-    }
-
-    public Point divide(double scalar) {
+    public void accumulatedDivide(double scalar) {
         if (scalar == 0) {
             throw new ArithmeticException("Division by zero.");
         }
-        double[] newCoords = new double[dimension];
         for (int i = 0; i < dimension; i++) {
-            newCoords[i] = this.position[i] / scalar;
+            this.position[i] /= scalar;
         }
-        return new Point(newCoords);
     }
 
     public double getOnePosition(int i) {

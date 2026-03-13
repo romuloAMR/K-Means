@@ -34,7 +34,7 @@ public class Kmeans {
         Random random = new Random();
         for (int i = 0; i < this.numClusters; i++){
             int num = random.nextInt(pointsCopy.size());
-            this.centroids.add(pointsCopy.get(num));
+            this.centroids.add(new Point(pointsCopy.get(num)));
             pointsCopy.remove(num);
         }
     }
@@ -44,7 +44,7 @@ public class Kmeans {
 
         for (int i = 0; i < this.numClusters; i++) {
             List<Point> cluster = this.clusters.get(i);
-            
+
             if (cluster.isEmpty()) {
                 newCentroids.add(this.centroids.get(i));
                 continue;
@@ -54,10 +54,12 @@ public class Kmeans {
             Point sum = new Point(new double[dim]); 
 
             for (Point point : cluster) {
-                sum = sum.add(point);
+                sum.accumulatedAdd(point);
             }
 
-            newCentroids.add(sum.divide(cluster.size()));
+            sum.accumulatedDivide(cluster.size());
+
+            newCentroids.add(sum);
         }
         this.centroids = newCentroids;
     }
@@ -67,7 +69,7 @@ public class Kmeans {
         int nearestIndex = -1;
         
         for (int i = 0; i < centroids.size(); i++) {
-            double dist = p.distanceTo(centroids.get(i));
+            double dist = p.sqDistanceTo(centroids.get(i));
             if (dist < minDistance) {
                 minDistance = dist;
                 nearestIndex = i;
@@ -77,9 +79,9 @@ public class Kmeans {
     }
 
     private boolean centroidsConverged(List<Point> last, List<Point> now) {
-        double epsilon = 0.00001;
+        double epsilon = 1e-10;
         for (int i = 0; i < this.numClusters; i++) {
-            if (last.get(i).distanceTo(now.get(i)) > epsilon) {
+            if (last.get(i).sqDistanceTo(now.get(i)) > epsilon) {
                 return false;
             }
         }
@@ -87,8 +89,14 @@ public class Kmeans {
     }
 
     public void fit() {
+        this.fit(300);
+    }
+
+    public void fit(int maxIterations) {
         this.randCentroids();
         List<Point> lastCentroids;
+        int iteration = 0;
+        boolean converged = false;
         
         do {
             lastCentroids = new ArrayList<>(this.centroids);
@@ -103,7 +111,9 @@ public class Kmeans {
             }
 
             this.updateCentroids();
-        } while (!centroidsConverged(lastCentroids, this.centroids));
+            converged = centroidsConverged(lastCentroids, this.centroids);
+            iteration++;
+        } while (!converged && iteration < maxIterations);
     }
 
     public List<Point> getCentroids() {
