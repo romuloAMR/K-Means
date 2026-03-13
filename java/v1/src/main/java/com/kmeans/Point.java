@@ -83,4 +83,9 @@ public class Point {
     public int getDimension() {
         return dimension;
     }
+
+    @Override
+    public String toString() {
+        return java.util.Arrays.toString(this.position);
+    }
 }

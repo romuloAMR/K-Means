@@ -6,14 +6,13 @@ public class Main {
     public static void main(String[] args) {
         
         try {
-            List<Point> points = CSVReader.loadPoints("");
+            List<Point> points = CSVReader.loadPoints("../data/dataset_100x100_range_0.0_to_100.0.csv");
             Kmeans ai = new Kmeans(3, points);
             ai.fit();
-            System.err.printf("Centroids: {}", ai.getCentroids());
-            System.err.printf("Clusters: {}", ai.getClusters());
+            System.err.printf("Centroids: %s%n", ai.getCentroids());
+            System.err.printf("Clusters: %s%n", ai.getClusters());
         } catch (Exception e){
             e.printStackTrace();
         }
-        System.err.println("Love, Faith, and Hope - V1");
     }
 }
