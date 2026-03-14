@@ -10,14 +10,16 @@ public class Kmeans {
     private final List<Point> points;
     private List<List<Point>> clusters;
     private List<Point> centroids;
+    private Random rand;
     
-    public Kmeans(int numClusters, List<Point> points) {
+    public Kmeans(int numClusters, List<Point> points, long seed) {
         if(points == null || points.size() < numClusters){
             throw new IllegalArgumentException("Number of clusters greater than the number of points");
         }
 
         this.points = points;
         this.numClusters = numClusters;
+        this.rand = new Random(seed);
         this.createClusters();
     }
 
@@ -31,9 +33,8 @@ public class Kmeans {
     private void randCentroids() {
         this.centroids = new ArrayList<>();
         List<Point> pointsCopy = new ArrayList<>(this.points);
-        Random random = new Random();
         for (int i = 0; i < this.numClusters; i++){
-            int num = random.nextInt(pointsCopy.size());
+            int num = this.rand.nextInt(pointsCopy.size());
             this.centroids.add(new Point(pointsCopy.get(num)));
             pointsCopy.remove(num);
         }
