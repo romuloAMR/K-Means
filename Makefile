@@ -21,11 +21,11 @@ create-data:
 # 2. GO
 run-go-v1:
 	@echo "Run Go V1 (Serial)..."
-	cd $(GO_DIR) && go run ./v1/main.go
+	cd $(GO_DIR) && go run ./v1/
 
 run-go-v2:
 	@echo "Run Go V2 (Parallel)..."
-	cd $(GO_DIR) && go run ./v2/main.go
+	cd $(GO_DIR) && go run ./v2/
 
 # 3. JAVA
 run-java-v1:
