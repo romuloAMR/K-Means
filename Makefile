@@ -13,6 +13,7 @@ help:
 	@echo "  make run-java-v1    - Runs the Serial version in Java"
 	@echo "  make run-java-v2    - Runs the Platform Thread + Batch version in Java"
 	@echo "  make run-java-v3    - Runs the Virtual Thread + Batch version in Java"
+	@echo "  make run-java-v4    - Runs the Platform Thread + Virtual Thread + Batch version in Java"
 
 # 1. Python
 create-data:
@@ -40,3 +41,7 @@ run-java-v2:
 run-java-v3:
 	@echo "Run Java V3 (Parallel)..."
 	cd $(JAVA_DIR) && mvn compile exec:java -pl v3
+
+run-java-v4:
+	@echo "Run Java V4 (Parallel)..."
+	cd $(JAVA_DIR) && mvn compile exec:java -pl v4
