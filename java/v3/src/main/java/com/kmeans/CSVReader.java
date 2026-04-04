@@ -9,7 +9,7 @@ import java.util.List;
 
 public class CSVReader {
     static public List<Point> loadPoints(String path) throws Exception {
-        return loadPoints(path, 512);
+        return loadPoints(path, 256);
     }
 
     static public List<Point> loadPoints(String path, int chunkSize) throws Exception {
