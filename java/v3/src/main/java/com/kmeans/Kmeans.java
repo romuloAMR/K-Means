@@ -101,7 +101,7 @@ public class Kmeans {
     }
 
     private void clustering() throws Exception {
-        clustering(128);
+        clustering(64);
     }
 
     private void clustering(int chunkSize) throws Exception {
