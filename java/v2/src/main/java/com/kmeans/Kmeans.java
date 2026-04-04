@@ -101,7 +101,7 @@ public class Kmeans {
     }
 
     private void clustering() throws Exception {
-        clustering(512, Runtime.getRuntime().availableProcessors()*4);
+        clustering(16384, Runtime.getRuntime().availableProcessors()*8);
     }
 
     private void clustering(int chunkSize, int numWorkers) throws Exception {
