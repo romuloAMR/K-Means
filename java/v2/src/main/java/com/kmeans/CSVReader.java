@@ -1,72 +1,108 @@
 package com.kmeans;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class CSVReader {
-    static public List<Point> loadPoints(String path) throws Exception {
-        return loadPoints(path, 512, Runtime.getRuntime().availableProcessors()*4);
+
+    private static final int SCALAR_FOR_WORKERS_READ = 1;
+    private static final int ONE_MB = 1048576;
+    private record Segment(long start, long size) {}
+
+    private static List<Segment> getSegments(Path path) throws IOException {
+        List<Segment> segments = new ArrayList<>();
+        try (RandomAccessFile raf = new RandomAccessFile(path.toFile(), "r")) {
+            long totalSize = raf.length();
+            int cores = Runtime.getRuntime().availableProcessors() * SCALAR_FOR_WORKERS_READ;
+            long targetSize = Math.max(totalSize / cores, ONE_MB);
+            long currentPos = 0;
+
+            while (currentPos < totalSize) {
+                long start = currentPos;
+                long endCandidate = currentPos + targetSize;
+
+                if (endCandidate >= totalSize) {
+                    segments.add(new Segment(start, totalSize - start));
+                    break;
+                }
+
+                raf.seek(endCandidate);
+                while (raf.getFilePointer() < totalSize && raf.read() != '\n');
+                
+                long actualEnd = raf.getFilePointer();
+                segments.add(new Segment(start, actualEnd - start));
+                currentPos = actualEnd;
+            }
+        }
+        return segments;
     }
 
-    static public List<Point> loadPoints(String path, int chunkSize, int numWorkers) throws Exception {
-        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
-            String line;
-            List<Point> points = new ArrayList<Point>();
-            List<Thread> threads = new ArrayList<Thread>();
-            List<String> buffer = new ArrayList<>();
+    public static List<Point> loadPoints(Path path) throws Exception {
+        List<Segment> segments = getSegments(path);
+        int numSegments = segments.size();
+        List<Point>[] partialResults = new List[numSegments];
+        Thread[] threads = new Thread[numSegments];
 
-            reader.readLine();
+        for (int i = 0; i < numSegments; i++) {
+            final int index = i;
+            Segment segment = segments.get(i);
 
-            // Batch logic
-            while ((line = reader.readLine()) != null) {
-                buffer.add(line);
-                if (buffer.size() >= chunkSize) {
-                    List<String> chunk = new ArrayList<>(buffer);
-                
-                    Thread t = Thread.ofPlatform().start(() -> {
-                        for (String l : chunk) {
-                            processLine(l, points);
-                        }
-                    });
-                
-                    threads.add(t);
-                    buffer.clear();
+            threads[i] = Thread.ofPlatform().start(() -> {
+                List<Point> pointsPartition = new ArrayList<Point>();
+                try (FileChannel ch = FileChannel.open(path, StandardOpenOption.READ)) {
+                    ByteBuffer buffer = ch.map(FileChannel.MapMode.READ_ONLY, segment.start(), segment.size());
 
-                    if (threads.size() >= numWorkers) {
-                        for (Thread th : threads) {
-                            th.join();
-                        }
-                        threads.clear();
+                    if (segment.start() == 0) {
+                        while (buffer.hasRemaining() && buffer.get() != '\n');
                     }
-                }
-            }
 
-            // Processes remaining lines non process and wait until the pending ones are completed
-            if (!buffer.isEmpty()) {
-                for (String l : buffer) {
-                    processLine(l, points);
+                    StringBuilder lineBuilder = new StringBuilder();
+                    while (buffer.hasRemaining()) {
+                        byte b = buffer.get();
+                        if (b == '\n') {
+                            processLine(lineBuilder.toString(), pointsPartition);
+                            lineBuilder.setLength(0);
+                        } else if (b != '\r') {
+                            lineBuilder.append((char) b);
+                        }
+                    }
+                    if (lineBuilder.length() > 0) {
+                        processLine(lineBuilder.toString(), pointsPartition);
+                    }
+                    partialResults[index] = pointsPartition;
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            }
-            for (Thread th : threads) {
-                th.join();
-            }
-
-            // End
-            return points;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            });
         }
+
+        List<Point> points = new ArrayList<>();
+        for (int i = 0; i < threads.length; i++) {
+            threads[i].join();
+            if (partialResults[i] != null) {
+                points.addAll(partialResults[i]);
+            }
+        }
+
+        return points;
     }
 
     private static void processLine(String currentLine, List<Point> points) {
-        double[] coords = Arrays.stream(currentLine.split(","))
-                                .map(String::trim)
-                                .mapToDouble(Double::parseDouble)
-                                .toArray();
-        points.add(new Point(coords));
+        if (currentLine.isEmpty()) return;
+        try {
+            String[] parts = currentLine.split(",");
+            double[] coords = new double[parts.length];
+            for (int i = 0; i < parts.length; i++) {
+                coords[i] = Double.parseDouble(parts[i].trim());
+            }
+            points.add(new Point(coords));
+        } catch (NumberFormatException e) {
+        }
     }
 }
