@@ -46,6 +46,7 @@ public class CSVReader {
     public static List<Point> loadPoints(Path path) throws Exception {
         List<Segment> segments = getSegments(path);
         int numSegments = segments.size();
+        @SuppressWarnings("unchecked")
         List<Point>[] partialResults = new List[numSegments];
         Thread[] threads = new Thread[numSegments];
 
