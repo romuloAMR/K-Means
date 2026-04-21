@@ -89,7 +89,7 @@ public class Kmeans {
         }
 
         for (Thread t : threads) {
-            if (t != null) t.join();
+            while (t.isAlive()){}
         }
 
         for (int c = 0; c < numClusters; c++) {
@@ -130,7 +130,7 @@ public class Kmeans {
         }
 
         for (Thread t : threads) {
-            if (t != null) t.join();
+            while (t.isAlive()){}
         }
     }
 

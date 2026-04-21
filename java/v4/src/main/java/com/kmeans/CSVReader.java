@@ -85,7 +85,7 @@ public class CSVReader {
 
         List<Point> points = new ArrayList<>();
         for (int i = 0; i < threads.length; i++) {
-            threads[i].join();
+            while (threads[i].isAlive()) {}
             if (partialResults[i] != null) {
                 points.addAll(partialResults[i]);
             }
