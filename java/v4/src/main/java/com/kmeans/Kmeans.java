@@ -7,91 +7,43 @@ import java.util.Random;
 public class Kmeans {
     
     private final int numClusters;
-    private final List<Point> points;
-    private List<List<Point>> clusters;
-    private List<Point> centroids;
-    private Random rand;
+    private final Point[] points;
+    private int[] assignments;
+    private Point[] centroids;
+    private final int numPoints;
+    private final double epsilon;
+    private final Random rand;
     
     public Kmeans(int numClusters, List<Point> points, long seed) {
         if(points == null || points.size() < numClusters){
             throw new IllegalArgumentException("Number of clusters greater than the number of points");
         }
 
-        this.points = points;
         this.numClusters = numClusters;
+        this.epsilon = 1e-10;
         this.rand = new Random(seed);
-        this.createClusters();
-    }
-
-    private void createClusters() {
-        this.clusters = new ArrayList<>();
-        for(int i = 0; i < this.numClusters; i++){
-            this.clusters.add(new ArrayList<>());
+        this.numPoints = points.size();
+        this.points = new Point[this.numPoints];
+        for (int i = 0; i < this.numPoints; i++) {
+            this.points[i] = points.get(i);
         }
-    }
-
-    private void clearClusters() {
-        for (List<Point> cluster : this.clusters) {
-            cluster.clear();
-        }
-    }
-
-    private void randCentroids() {
-        this.centroids = new ArrayList<>();
-        List<Point> pointsCopy = new ArrayList<>(this.points);
+        this.assignments = new int[this.numPoints];
+        this.centroids = new Point[this.numClusters];
+        
+        points = new ArrayList<>(points);
         for (int i = 0; i < this.numClusters; i++){
-            int num = this.rand.nextInt(pointsCopy.size());
-            this.centroids.add(new Point(pointsCopy.get(num)));
-            pointsCopy.remove(num);
+            int num = this.rand.nextInt(points.size());
+            this.centroids[i] = new Point(points.get(num));
+            points.remove(num);
         }
-    }
-
-    private void updateCentroids() throws Exception {
-        try{
-            List<Thread> threads = new ArrayList<Thread>();
-            List<Point> newCentroids = new ArrayList<Point>(this.centroids);
-
-            for (int i = 0; i < this.numClusters; i++) {
-                int numCluster = i;
-                Thread t = Thread.ofVirtual().start(() -> {
-                    List<Point> cluster = this.clusters.get(numCluster);
-
-                    if (cluster.isEmpty()) {
-                        return;
-                    }
-
-                    int dim = cluster.get(0).getDimension();
-                    Point sum = new Point(new double[dim]); 
-
-                    for (Point point : cluster) {
-                        sum.accumulatedAdd(point);
-                    }
-
-                    sum.accumulatedDivide(cluster.size());
-
-                    newCentroids.set(numCluster, sum);
-                });
-
-                threads.add(t);
-            }
-
-            for (Thread th : threads) {
-                th.join();
-            }
-
-            this.centroids = newCentroids;
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }   
     }
 
     private int findNearestCentroid(Point p) {
         double minDistance = Double.MAX_VALUE;
         int nearestIndex = -1;
         
-        for (int i = 0; i < centroids.size(); i++) {
-            double dist = p.sqDistanceTo(centroids.get(i));
+        for (int i = 0; i < centroids.length; i++) {
+            double dist = p.sqDistanceTo(centroids[i]);
             if (dist < minDistance) {
                 minDistance = dist;
                 nearestIndex = i;
@@ -100,105 +52,102 @@ public class Kmeans {
         return nearestIndex;
     }
 
-    private void clustering() throws Exception {
-        clustering(16384, Runtime.getRuntime().availableProcessors()*8);
-    }
-
-    private void clustering(int chunkSize, int numWorkers) throws Exception {
-        try {
-            List<Thread> threads = new ArrayList<Thread>();
-            List<List<List<Point>>> partialResults = new ArrayList<>();
-        
-            List<Point> buffer = new ArrayList<>();
-        
-            // Batch logic
-            for (Point point : this.points) {
-                buffer.add(point);
-            
-                if (buffer.size() >= chunkSize) {
-                    List<Point> chunk = new ArrayList<>(buffer);
-
-                    List<List<Point>> localClusters = new ArrayList<>();
-                    for (int i = 0; i < numClusters; i++) {
-                        localClusters.add(new ArrayList<>());
-                    }
-                
-                    partialResults.add(localClusters);
-                
-                    Thread t = Thread.ofPlatform().start(() -> {
-                        for (Point p : chunk) {
-                            int idx = findNearestCentroid(p);
-                            localClusters.get(idx).add(p);
-                        }
-                    });
-                
-                    threads.add(t);
-                    buffer.clear();
-                
-                    if (threads.size() >= numWorkers) {
-                        for (Thread th : threads) {
-                            th.join();
-                        }
-                        threads.clear();
-                    }
-                }
-            }
-        
-            // Processes remaining points and wait until the pending ones are completed
-            if (!buffer.isEmpty()) {
-                List<List<Point>> localClusters = new ArrayList<>();
-                for (int i = 0; i < numClusters; i++) {
-                    localClusters.add(new ArrayList<>());
-                }
-            
-                for (Point p : buffer) {
-                    int idx = findNearestCentroid(p);
-                    localClusters.get(idx).add(p);
-                }
-            
-                partialResults.add(localClusters);
-            }
-            for (Thread th : threads) {
-                th.join();
-            }
-        
-            // Merge partial clusters in cluster and end process
-            for (List<List<Point>> local : partialResults) {
-                for (int i = 0; i < numClusters; i++) {
-                    this.clusters.get(i).addAll(local.get(i));
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private boolean centroidsConverged(List<Point> last, List<Point> now) {
-        double epsilon = 1e-10;
+    private boolean centroidsConverged(Point[] last, Point[] now) {
         for (int i = 0; i < this.numClusters; i++) {
-            if (last.get(i).sqDistanceTo(now.get(i)) > epsilon) {
+            if (last[i].sqDistanceTo(now[i]) > this.epsilon) {
                 return false;
             }
         }
         return true;
     }
 
-    public void fit() {
-        this.fit(300);
+    private void updateCentroids(int numWorkers)  throws InterruptedException {
+        int dim = this.points[0].getDimension();
+        double[][][] sumsPartial = new double[numWorkers][numClusters][dim];
+        int[][] countsPartial = new int[numWorkers][numClusters];
+        Thread[] threads = new Thread[numWorkers];
+        int grainSize = (this.numPoints + numWorkers - 1) / numWorkers; 
+
+        for (int i = 0; i < numWorkers; i++) {
+            final int workerId = i; 
+            final int start = i * grainSize;
+            final int end = Math.min(start + grainSize, this.numPoints);
+
+            if (start >= this.numPoints) break;
+
+            threads[i] = Thread.ofPlatform().start(() -> {
+                for (int j = start; j < end; j++) {
+                    int clusterId = this.assignments[j];
+                    double[] point = this.points[j].getCoordinates();
+
+                    for (int d = 0; d < dim; d++) {
+                        sumsPartial[workerId][clusterId][d] += point[d];
+                    }
+                    countsPartial[workerId][clusterId]++;
+                }
+            });
+        }
+
+        for (Thread t : threads) {
+            if (t != null) t.join();
+        }
+
+        for (int c = 0; c < numClusters; c++) {
+            double[] finalSum = new double[dim];
+            int totalCount = 0;
+            
+            for (int w = 0; w < numWorkers; w++) {
+                totalCount += countsPartial[w][c];
+                for (int d = 0; d < dim; d++) {
+                    finalSum[d] += sumsPartial[w][c][d];
+                }
+            }
+
+            if (totalCount > 0) {
+                for (int d = 0; d < dim; d++) {
+                    finalSum[d] /= totalCount;
+                }
+                this.centroids[c] = new Point(finalSum);
+            }
+        }
     }
 
-    public void fit(int maxIterations) {
+    private void clustering(int numWorkers) throws InterruptedException {
+        Thread[] threads = new Thread[numWorkers];
+        int grainSize = (this.numPoints + numWorkers - 1) / numWorkers; 
+
+        for (int i = 0; i < numWorkers; i++) {
+            final int start = i * grainSize;
+            final int end = Math.min(start + grainSize, this.numPoints);
+
+            if (start >= this.numPoints) break;
+
+            threads[i] = Thread.ofPlatform().start(() -> {
+                for (int j = start; j < end; j++) {
+                    this.assignments[j] = findNearestCentroid(this.points[j]);
+                }
+            });
+        }
+
+        for (Thread t : threads) {
+            if (t != null) t.join();
+        }
+    }
+
+    public void fit() {
+        this.fit(300, Runtime.getRuntime().availableProcessors());
+    }
+
+    public void fit(int maxIterations, int numWorkers) {
         try {
-            this.randCentroids();
-            List<Point> lastCentroids;
+            Point[] lastCentroids;
             int iteration = 0;
             boolean converged = false;
 
             do {
-                lastCentroids = new ArrayList<>(this.centroids);
-                this.clearClusters();
-                this.clustering();
-                this.updateCentroids();
+                lastCentroids = this.centroids.clone();
+                this.clustering(numWorkers);
+                this.updateCentroids(numWorkers);
                 converged = centroidsConverged(lastCentroids, this.centroids);
                 iteration++;
             } while (!converged && iteration < maxIterations);
@@ -207,11 +156,22 @@ public class Kmeans {
         }
     }
 
-    public List<Point> getCentroids() {
+    public Point[] getCentroids() {
         return centroids;
     }
 
-    public List<List<Point>> getClusters() {
+    public List<Point>[] getClusters() {
+        @SuppressWarnings("unchecked")
+        List<Point>[] clusters = (List<Point>[]) new List[this.numClusters];
+
+        for (int i = 0; i < this.numClusters; i++) {
+            clusters[i] = new ArrayList<Point>();
+        }
+
+        for (int i = 0; i < this.numPoints; i++) {
+            clusters[this.assignments[i]].add(this.points[i]);
+        }
+
         return clusters;
     }
 }
