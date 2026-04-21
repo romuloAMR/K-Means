@@ -19,6 +19,7 @@
         <module>v2</module>
         <module>v3</module>
         <module>v4</module>
+        <module>v5</module>
     </modules>
 
     <dependencyManagement>
