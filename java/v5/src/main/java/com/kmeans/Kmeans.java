@@ -8,11 +8,13 @@ public class Kmeans {
     
     private final int numClusters;
     private final Point[] points;
-    private int[] assignments;
-    private Point[] centroids;
+    private volatile int[] assignments;
+    private volatile Point[] centroids;
     private final int numPoints;
     private final double epsilon;
     private final Random rand;
+    private volatile double[][][] sumsPartial;
+    private volatile int[][] countsPartial;
     
     public Kmeans(int numClusters, List<Point> points, long seed) {
         if(points == null || points.size() < numClusters){
@@ -62,9 +64,9 @@ public class Kmeans {
     }
 
     private void updateCentroids(int numWorkers)  throws InterruptedException {
-        int dim = this.points[0].getDimension();
-        double[][][] sumsPartial = new double[numWorkers][numClusters][dim];
-        int[][] countsPartial = new int[numWorkers][numClusters];
+        final int dim = this.points[0].getDimension();
+        sumsPartial = new double[numWorkers][numClusters][dim];
+        countsPartial = new int[numWorkers][numClusters];
         Thread[] threads = new Thread[numWorkers];
         int grainSize = (this.numPoints + numWorkers - 1) / numWorkers; 
 
@@ -88,9 +90,7 @@ public class Kmeans {
             });
         }
 
-        for (Thread t : threads) {
-            while (t.isAlive()){}
-        }
+        for (Thread t : threads) while (t.isAlive()){}
 
         for (int c = 0; c < numClusters; c++) {
             double[] finalSum = new double[dim];
@@ -129,9 +129,7 @@ public class Kmeans {
             });
         }
 
-        for (Thread t : threads) {
-            while (t.isAlive()){}
-        }
+        for (Thread t : threads) while (t.isAlive()){}
     }
 
     public void fit() {

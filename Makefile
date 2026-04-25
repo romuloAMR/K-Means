@@ -8,12 +8,12 @@ DATA_DIR=data
 help:
 	@echo "Available commands:"
 	@echo "  make create-data    - Runs code to create data"
-	@echo "  make run-go-v1      - Runs the Serial version in Go"
-	@echo "  make run-go-v2      - Runs the Parallel version in Go"
-	@echo "  make run-java-v1    - Runs the Serial version in Java"
-	@echo "  make run-java-v2    - Runs the Platform Thread + Batch version in Java"
-	@echo "  make run-java-v3    - Runs the Virtual Thread + Batch version in Java"
-	@echo "  make run-java-v4    - Runs the Platform Thread + Virtual Thread + Batch version in Java"
+	@echo "  make run-go-v1      - Runs the V1 in Go"
+	@echo "  make run-go-v2      - Runs the V2 in Go"
+	@echo "  make run-java-v1    - Runs the V1 in Java"
+	@echo "  make run-java-v2    - Runs the V2 in Java"
+	@echo "  make run-java-v3    - Runs the V2 in Java"
+	@echo "  make run-java-v4    - Runs the V3 in Java"
 
 # 1. Python
 create-data:
@@ -22,26 +22,30 @@ create-data:
 
 # 2. GO
 run-go-v1:
-	@echo "Run Go V1 (Serial)..."
+	@echo "Run Go V1..."
 	cd $(GO_DIR) && go run ./v1/
 
 run-go-v2:
-	@echo "Run Go V2 (Parallel)..."
+	@echo "Run Go V2..."
 	cd $(GO_DIR) && go run ./v2/
 
 # 3. JAVA
 run-java-v1:
-	@echo "Run Java V1 (Serial)..."
+	@echo "Run Java V1..."
 	cd $(JAVA_DIR) && mvn compile exec:java -pl v1
 
 run-java-v2:
-	@echo "Run Java V2 (Parallel)..."
+	@echo "Run Java V2..."
 	cd $(JAVA_DIR) && mvn compile exec:java -pl v2
 
 run-java-v3:
-	@echo "Run Java V3 (Parallel)..."
+	@echo "Run Java V3..."
 	cd $(JAVA_DIR) && mvn compile exec:java -pl v3
 
 run-java-v4:
-	@echo "Run Java V4 (Parallel)..."
+	@echo "Run Java V4..."
 	cd $(JAVA_DIR) && mvn compile exec:java -pl v4
+
+run-java-v5:
+	@echo "Run Java V5..."
+	cd $(JAVA_DIR) && mvn compile exec:java -pl v5
