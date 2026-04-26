@@ -12,8 +12,9 @@ help:
 	@echo "  make run-go-v2      - Runs the V2 in Go"
 	@echo "  make run-java-v1    - Runs the V1 in Java"
 	@echo "  make run-java-v2    - Runs the V2 in Java"
-	@echo "  make run-java-v3    - Runs the V2 in Java"
-	@echo "  make run-java-v4    - Runs the V3 in Java"
+	@echo "  make run-java-v3    - Runs the V3 in Java"
+	@echo "  make run-java-v4    - Runs the V4 in Java"
+	@echo "  make run-java-v5    - Runs the V5 in Java"
 
 # 1. Python
 create-data:
