@@ -3,13 +3,14 @@ GO_DIR=go
 JAVA_DIR=java
 DATA_DIR=data
 
-.PHONY: all help create-data run-go-v1 run-go-v2 run-java-v1 run-java-v2
+.PHONY: all help create-data run-go-v1 run-go-v2 run-go-v3 run-java-v1 run-java-v2 run-java-v3 run-java-v4 run-java-v5
 
 help:
 	@echo "Available commands:"
 	@echo "  make create-data    - Runs code to create data"
 	@echo "  make run-go-v1      - Runs the V1 in Go"
 	@echo "  make run-go-v2      - Runs the V2 in Go"
+	@echo "  make run-go-v3      - Runs the V3 in Go"
 	@echo "  make run-java-v1    - Runs the V1 in Java"
 	@echo "  make run-java-v2    - Runs the V2 in Java"
 	@echo "  make run-java-v3    - Runs the V3 in Java"
@@ -29,6 +30,10 @@ run-go-v1:
 run-go-v2:
 	@echo "Run Go V2..."
 	cd $(GO_DIR) && go run ./v2/
+
+run-go-v3:
+	@echo "Run Go V3..."
+	cd $(GO_DIR) && go run ./v3/
 
 # 3. JAVA
 run-java-v1:
