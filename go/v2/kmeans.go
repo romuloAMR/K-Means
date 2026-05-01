@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"math"
-	"math/rand/v2"
 	"runtime"
 	"sync"
 )
@@ -15,7 +14,6 @@ type kmeans struct {
 	centroids []Point
 	numPoints int
 	epsilon float64
-	rng *rand.Rand
 }
 
 func Kmeans(numClusters int, points []Point, seed uint64) (*kmeans, error) {
@@ -24,36 +22,32 @@ func Kmeans(numClusters int, points []Point, seed uint64) (*kmeans, error) {
 		return nil, errors.New("number of clusters greater than the number of points or zero points")
 	}
 
-	pcg := rand.NewPCG(seed, seed+1) 
-    rng := rand.New(pcg)
-
 	instance := &kmeans{
 		numClusters: numClusters,
 		epsilon: 1e-10,
-		rng: rng,
 		numPoints: len(points),
 		points: points,
 		assignments: make([]int, numPoints),
 		centroids: make([]Point, numClusters),
 	}
-	instance.randCentroids()
+	
+	indices := []int{10, 532, 9012}
+	instance.initCentroids(indices)
 
 	return instance, nil
 }
 
-func (k *kmeans) randCentroids() {
-	numPoints := len(k.points)
-	indices := k.rng.Perm(numPoints)
-    for i := 0; i < k.numClusters; i++ {
-        k.centroids[i] = k.points[indices[i]]
-    }
+func (k *kmeans) initCentroids(indices []int) {
+	for i := 0; i < k.numClusters; i++ {
+		k.centroids[i] = k.points[indices[i]]
+	}
 }
 
 func (k *kmeans) findNearestCentroid(p *Point) (int, error) {
 	minDistance := math.MaxFloat64
 	nearestIndex := -1
 
-	for i := range k.numClusters {
+	for i := 0; i < k.numClusters; i++ {
 		dist, err := p.SqDistanceTo(&k.centroids[i])
 
 		if err != nil {
@@ -70,7 +64,7 @@ func (k *kmeans) findNearestCentroid(p *Point) (int, error) {
 }
 
 func (k *kmeans) centroidsConverged(last []Point, now []Point) (bool, error) {
-	for i := range k.numClusters {
+	for i := 0; i < k.numClusters; i++ {
 		dist, err := last[i].SqDistanceTo(&now[i])
 		if err != nil {
 			return false, err
