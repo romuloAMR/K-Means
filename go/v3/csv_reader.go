@@ -87,8 +87,6 @@ func LoadPoints(path string) ([]Point, error) {
         wg.Add(1)
         go func (index int, segment Segment)  {
             defer wg.Done()
-            runtime.LockOSThread()
-        	defer runtime.UnlockOSThread()
             
             var pointsPartition []Point
 			buffer := make([]byte, segment.size)
