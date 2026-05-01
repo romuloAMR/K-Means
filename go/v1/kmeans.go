@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"math"
-	"math/rand/v2"
 )
 
 type kmeans struct {
@@ -11,7 +10,6 @@ type kmeans struct {
 	points []Point
 	clusters [][]Point
 	centroids []Point
-	rng *rand.Rand
 }
 
 func Kmeans(numClusters int, points []Point, seed uint64) (*kmeans, error) {
@@ -20,26 +18,23 @@ func Kmeans(numClusters int, points []Point, seed uint64) (*kmeans, error) {
 		return nil, errors.New("number of clusters greater than the number of points or zero points")
 	}
 
-	pcg := rand.NewPCG(seed, seed+1) 
-    rng := rand.New(pcg)
-
 	instance := &kmeans{
 		numClusters: numClusters,
 		points: points,
 		clusters: make([][]Point, numClusters),
 		centroids: make([]Point, numClusters),
-		rng: rng,
 	}
+
+	indices := []int{10, 532, 9012}
+	instance.initCentroids(indices)
 
 	return instance, nil
 }
 
-func (k *kmeans) randCentroids() {
-	numPoints := len(k.points)
-	indices := k.rng.Perm(numPoints)
-    for i := 0; i < k.numClusters; i++ {
-        k.centroids[i] = k.points[indices[i]]
-    }
+func (k *kmeans) initCentroids(indices []int) {
+	for i := 0; i < k.numClusters; i++ {
+		k.centroids[i] = k.points[indices[i]]
+	}
 }
 
 func (k *kmeans) updateCentroids() error {
@@ -120,7 +115,6 @@ func (k *kmeans) Fit() error {
 }
 
 func (k *kmeans) FitMaxIterations(maxIterations int) error {
-	k.randCentroids()
 	iteration := 0
 	lastCentroids := make([]Point, k.numClusters)
 

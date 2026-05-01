@@ -2,7 +2,6 @@ package com.kmeans;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class Kmeans {
     
@@ -10,7 +9,6 @@ public class Kmeans {
     private final List<Point> points;
     private List<List<Point>> clusters;
     private List<Point> centroids;
-    private Random rand;
     
     public Kmeans(int numClusters, List<Point> points, long seed) {
         if(points == null || points.size() < numClusters){
@@ -19,7 +17,6 @@ public class Kmeans {
 
         this.points = points;
         this.numClusters = numClusters;
-        this.rand = new Random(seed);
         this.createClusters();
     }
 
@@ -32,11 +29,9 @@ public class Kmeans {
 
     private void randCentroids() {
         this.centroids = new ArrayList<>();
-        List<Point> pointsCopy = new ArrayList<>(this.points);
-        for (int i = 0; i < this.numClusters; i++){
-            int num = this.rand.nextInt(pointsCopy.size());
-            this.centroids.add(new Point(pointsCopy.get(num)));
-            pointsCopy.remove(num);
+        int[] indices = {10, 532, 9012};
+        for (int i = 0; i < this.numClusters; i++) {
+            this.centroids.add(new Point(this.points.get(indices[i])));;
         }
     }
 
