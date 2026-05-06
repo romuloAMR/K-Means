@@ -40,7 +40,7 @@ func (k *kmeans) initCentroids(indices []int) {
 func (k *kmeans) updateCentroids() error {
 	newCentroids := make([]Point, k.numClusters)
 
-	for i := range k.numClusters {
+	for i := 0; i < k.numClusters; i++ {
 		cluster := k.clusters[i]
 
 		if len(cluster) == 0 {
@@ -72,7 +72,7 @@ func (k *kmeans) findNearestCentroid(p *Point) (int, error) {
 	minDistance := math.MaxFloat64
 	nearestIndex := -1
 
-	for i := range k.numClusters {
+	for i := 0; i < k.numClusters; i++ {
 		dist, err := p.SqDistanceTo(&k.centroids[i])
 
 		if err != nil {
@@ -90,7 +90,7 @@ func (k *kmeans) findNearestCentroid(p *Point) (int, error) {
 
 func (k *kmeans) centroidsConverged(last []Point, now []Point) (bool, error) {
 	epsilon := 1e-10
-	for i := range k.numClusters {
+	for i := 0; i < k.numClusters; i++ {
 		dist, err := last[i].SqDistanceTo(&now[i])
 
 		if err != nil {
