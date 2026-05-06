@@ -9,33 +9,38 @@ import (
 )
 
 func LoadPoints(path string) ([]Point, error) {
-    file, err := os.Open(path)
-    if err != nil {
+	file, err := os.Open(path)
+	if err != nil {
 		return nil, fmt.Errorf("problem opening the file: %w", err)
 	}
-    defer file.Close()
+	defer file.Close()
 
-    reader := csv.NewReader(file)
+	return LoadPointsFromReader(file)
+}
 
-	_, err = reader.Read() 
-    if err != nil {
-        if err == io.EOF {
+func LoadPointsFromReader(r io.Reader) ([]Point, error) {
+	reader := csv.NewReader(r)
+
+	_, err := reader.Read()
+	if err != nil {
+		if err == io.EOF {
 			return []Point{}, nil
 		}
-        return nil, fmt.Errorf("error skipping the header: %w", err)
-    }
+		return nil, fmt.Errorf("error skipping the header: %w", err)
+	}
 
 	var points []Point
-    for {
-        line, err := reader.Read()
+
+	for {
+		line, err := reader.Read()
         if err == io.EOF {
 			break
 		}
-		if len(line) == 0 || (len(line) == 1 && line[0] == ""){
-			continue
-		}
         if err != nil {
 			return nil, fmt.Errorf("problem reading a line: %w", err)
+		}
+		if len(line) == 0 || (len(line) == 1 && line[0] == ""){
+			continue
 		}
 
         point, err := lineToPoint(line)

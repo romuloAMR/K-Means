@@ -23,7 +23,10 @@ func Segments(filePath string) ([]Segment, error) {
 	}
 	defer file.Close()
 
-	info, _ := file.Stat()
+	info, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
 	totalSize := info.Size() 
 	cores := runtime.NumCPU() * scalarForWorkers
 

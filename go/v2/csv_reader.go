@@ -23,8 +23,11 @@ func Segments(filePath string) ([]Segment, error) {
 	}
 	defer file.Close()
 
-	info, _ := file.Stat()
-	totalSize := info.Size() 
+	info, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	totalSize := info.Size()
 	cores := runtime.NumCPU() * scalarForWorkers
 
 	targetSize := totalSize / int64(cores)
@@ -69,21 +72,21 @@ func Segments(filePath string) ([]Segment, error) {
 }
 
 func LoadPoints(path string) ([]Point, error) {
-    segments, err := Segments(path)
-    if err != nil {
-        return nil, err
-    }
-    numSegments := len(segments)
-    partialResults := make ([][]Point, numSegments)
+	segments, err := Segments(path)
+	if err != nil {
+		return nil, err
+	}
+	numSegments := len(segments)
+	partialResults := make([][]Point, numSegments)
     var wg sync.WaitGroup
 
     file, err := os.Open(path)
 	if err != nil {
 		return nil, err
-	}
-	defer file.Close()
+			}
+			defer file.Close()
 
-    for i := 0; i < numSegments; i++ {
+			for i := 0; i < numSegments; i++ {
         wg.Add(1)
         go func (index int, segment Segment)  {
             defer wg.Done()
@@ -119,31 +122,31 @@ func LoadPoints(path string) ([]Point, error) {
 				}
 			}
 			partialResults[index] = pointsPartition
-            
-        }(i, segments[i])
-    }
 
-    wg.Wait()
+		}(i, segments[i])
+	}
 
-    totalPoints := 0
-    for _, partition := range partialResults {
-        totalPoints += len(partition)
-    }
+	wg.Wait()
 
-    points := make([]Point, 0, totalPoints)
-    for _, partition := range partialResults {
-        if partition != nil {
+	totalPoints := 0
+	for _, partition := range partialResults {
+		totalPoints += len(partition)
+	}
+
+	points := make([]Point, 0, totalPoints)
+	for _, partition := range partialResults {
+		if partition != nil {
             points = append(points, partition...)
         }
-    }
+	}
 
-    return points, nil
+	return points, nil
 }
 
 func processLine(line []byte) (*Point, error) {
 	parts := bytes.Split(line, []byte(","))
 	coords := make([]float64, len(parts))
-	
+
 	for i, part := range parts {
 		val, err := strconv.ParseFloat(string(bytes.TrimSpace(part)), 64)
 		if err != nil {
@@ -152,7 +155,7 @@ func processLine(line []byte) (*Point, error) {
 		coords[i] = val
 	}
 
-    point, err := NewPoint(coords)
+	point, err := NewPoint(coords)
     if err != nil {
         return nil, err
     }
