@@ -14,14 +14,18 @@ RUN wget https://go.dev/dl/go1.25.2.linux-amd64.tar.gz && \
     tar -C /usr/local -xzf go1.25.2.linux-amd64.tar.gz && \
     rm go1.25.2.linux-amd64.tar.gz
 
+ENV GOPATH=/go
+ENV PATH=$PATH:/usr/local/go/bin:$GOPATH/bin:/opt/poetry/bin
+ENV GO111MODULE=on
+
+RUN mkdir -p /go/bin && \
+    go install golang.org/x/tools/cmd/stress@latest && \
+    go install golang.org/x/perf/cmd/benchstat@latest
+
 ENV POETRY_HOME=/opt/poetry
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
     cd /usr/local/bin && \
     ln -s /opt/poetry/bin/poetry
-
-ENV GOPATH=/go
-ENV PATH=$PATH:/usr/local/go/bin:$GOPATH/bin:/opt/poetry/bin
-ENV GO111MODULE=on
 
 WORKDIR /workspace
 USER root
