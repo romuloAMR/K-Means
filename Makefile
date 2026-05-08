@@ -1,12 +1,18 @@
 GO_DIR = go
 JAVA_DIR = java
 DATA_DIR = data
-BENCH_FLAGS_GO = -bench=. -benchmem -cpu=1,4,8,16 -count=3
+BENCH_FLAGS_GO = -bench=. -benchmem -cpu=1,4,8,16 -count=6
 
 .PHONY: all help create-data \
-        run-go-v1 microbenchmark-go-v1 run-go-v2 microbenchmark-go-v2 \
-        run-go-v3 microbenchmark-go-v3 run-go-v4 microbenchmark-go-v4 \
-        run-java-v1 run-java-v2 run-java-v3 run-java-v4 run-java-v5
+        run-go-v1 microbenchmark-go-v1 heisenbug-check-go-v1\
+		run-go-v2 microbenchmark-go-v2 heisenbug-check-go-v2\
+        run-go-v3 microbenchmark-go-v3 heisenbug-check-go-v3\
+		run-go-v4 microbenchmark-go-v4 heisenbug-check-go-v4\
+        run-java-v1 \
+		run-java-v2 \
+		run-java-v3 \
+		run-java-v4 \
+		run-java-v5
 
 all: help
 
@@ -21,6 +27,10 @@ help:
 	@echo "  make microbenchmark-go-v2 	 - Microbenchmark of V2 in Go"
 	@echo "  make microbenchmark-go-v3 	 - Microbenchmark of V3 in Go"
 	@echo "  make microbenchmark-go-v4 	 - Microbenchmark of V4 in Go"
+	@echo "  make heisenbug-check-go-v1  - Check heisenbug of V1 in Go"
+	@echo "  make heisenbug-check-go-v2  - Check heisenbug of V2 in Go"
+	@echo "  make heisenbug-check-go-v3  - Check heisenbug of V3 in Go"
+	@echo "  make heisenbug-check-go-v4  - Check heisenbug of V4 in Go"
 	@echo "  make run-java-v1    		 - Runs the V1 in Java"
 	@echo "  make run-java-v2    		 - Runs the V2 in Java"
 	@echo "  make run-java-v3    		 - Runs the V3 in Java"
@@ -41,7 +51,13 @@ microbenchmark-go-v1:
 	@echo "Microbenchmark Go V1..."
 	cd $(GO_DIR) && \
 	go test $(BENCH_FLAGS_GO) ./v1/ > results_v1.txt && \
-	benchstat -split=cpu results_v1.txt
+	benchstat -format csv -col /cpu results_v1.txt > table_go_v1.csv
+
+heisenbug-check-go-v1:
+	@echo "Check Heisenbugs Go V1..."
+	cd $(GO_DIR) && go test -c -race -o v1_stress.test ./v1/ && \
+    timeout 15m stress ./v1_stress.test || true && \
+    rm ./v1_stress.test
 
 run-go-v2:
 	@echo "Run Go V2..."
@@ -51,7 +67,13 @@ microbenchmark-go-v2:
 	@echo "Microbenchmark Go V2..."
 	cd $(GO_DIR) && \
 	go test $(BENCH_FLAGS_GO) ./v2/ > results_v2.txt && \
-	benchstat -split=cpu results_v2.txt
+	benchstat -format csv -col /cpu results_v2.txt > table_go_v2.csv
+
+heisenbug-check-go-v2:
+	@echo "Check Heisenbugs Go V2..."
+	cd $(GO_DIR) && go test -c -race -o v2_stress.test ./v2/ && \
+    timeout 15m stress ./v2_stress.test || true && \
+    rm ./v2_stress.test
 
 run-go-v3:
 	@echo "Run Go V3..."
@@ -61,7 +83,13 @@ microbenchmark-go-v3:
 	@echo "Microbenchmark Go V3..."
 	cd $(GO_DIR) && \
 	go test $(BENCH_FLAGS_GO) ./v3/ > results_v3.txt && \
-	benchstat -split=cpu results_v3.txt
+	benchstat -format csv -col /cpu results_v3.txt > table_go_v3.csv
+
+heisenbug-check-go-v3:
+	@echo "Check Heisenbugs Go V3..."
+	cd $(GO_DIR) && go test -c -race -o v3_stress.test ./v3/ && \
+    timeout 15m stress ./v3_stress.test || true && \
+    rm ./v3_stress.test
 
 run-go-v4:
 	@echo "Run Go V4..."
@@ -71,7 +99,13 @@ microbenchmark-go-v4:
 	@echo "Microbenchmark Go V4..."
 	cd $(GO_DIR) && \
 	go test $(BENCH_FLAGS_GO) ./v4/ > results_v4.txt && \
-	benchstat -split=cpu results_v4.txt
+	benchstat -format csv -col /cpu results_v4.txt > table_go_v4.csv
+
+heisenbug-check-go-v4:
+	@echo "Check Heisenbugs Go V4..."
+	cd $(GO_DIR) && go test -c -race -o v4_stress.test ./v4/ && \
+    timeout 15m stress ./v4_stress.test || true && \
+    rm ./v4_stress.test
 
 # 3. JAVA
 run-java-v1:
