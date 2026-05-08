@@ -1,9 +1,14 @@
-# DIRs
-GO_DIR=go
-JAVA_DIR=java
-DATA_DIR=data
+GO_DIR = go
+JAVA_DIR = java
+DATA_DIR = data
+BENCH_FLAGS_GO = -bench=. -benchmem -cpu=1,4,8,16 -count=3
 
-.PHONY: all help create-data run-go-v1 run-go-v2 run-go-v3 run-go-v4 run-java-v1 run-java-v2 run-java-v3 run-java-v4 run-java-v5 make microbenchmark-go-v1 
+.PHONY: all help create-data \
+        run-go-v1 microbenchmark-go-v1 run-go-v2 microbenchmark-go-v2 \
+        run-go-v3 microbenchmark-go-v3 run-go-v4 microbenchmark-go-v4 \
+        run-java-v1 run-java-v2 run-java-v3 run-java-v4 run-java-v5
+
+all: help
 
 help:
 	@echo "Available commands:"
@@ -24,7 +29,7 @@ help:
 
 # 1. Python
 create-data:
-	@echo "Creating Data"
+	@echo "Creating Data..."
 	cd $(DATA_DIR) && python3 main.py
 
 # 2. GO
@@ -34,7 +39,9 @@ run-go-v1:
 
 microbenchmark-go-v1:
 	@echo "Microbenchmark Go V1..."
-	cd $(GO_DIR) && go test -bench=. -benchmem ./v1/
+	cd $(GO_DIR) && \
+	go test $(BENCH_FLAGS_GO) ./v1/ > results_v1.txt && \
+	benchstat -split=cpu results_v1.txt
 
 run-go-v2:
 	@echo "Run Go V2..."
@@ -42,7 +49,9 @@ run-go-v2:
 
 microbenchmark-go-v2:
 	@echo "Microbenchmark Go V2..."
-	cd $(GO_DIR) && go test -bench=. -benchmem ./v2/
+	cd $(GO_DIR) && \
+	go test $(BENCH_FLAGS_GO) ./v2/ > results_v2.txt && \
+	benchstat -split=cpu results_v2.txt
 
 run-go-v3:
 	@echo "Run Go V3..."
@@ -50,7 +59,9 @@ run-go-v3:
 
 microbenchmark-go-v3:
 	@echo "Microbenchmark Go V3..."
-	cd $(GO_DIR) && go test -bench=. -benchmem ./v3/
+	cd $(GO_DIR) && \
+	go test $(BENCH_FLAGS_GO) ./v3/ > results_v3.txt && \
+	benchstat -split=cpu results_v3.txt
 
 run-go-v4:
 	@echo "Run Go V4..."
@@ -58,7 +69,9 @@ run-go-v4:
 
 microbenchmark-go-v4:
 	@echo "Microbenchmark Go V4..."
-	cd $(GO_DIR) && go test -bench=. -benchmem ./v4/
+	cd $(GO_DIR) && \
+	go test $(BENCH_FLAGS_GO) ./v4/ > results_v4.txt && \
+	benchstat -split=cpu results_v4.txt
 
 # 3. JAVA
 run-java-v1:
