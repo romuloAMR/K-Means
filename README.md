@@ -23,10 +23,13 @@ Implementation and optimisation of the K-Means algorithm in Java and Go language
 | :construction:     | [Java v3](./java/v3/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
 | :construction:     | [Java v4](./java/v4/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
 | :construction:     | [Java v5](./java/v5/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
-| :construction:     | [Go v1](./go/v1/)                              | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :x:                |
-| :construction:     | [Go v2](./go/v2/)                              | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :x:                |
-| :construction:     | [Go v3](./go/v3/)                              | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :x:                |
-| :construction:     | [Go v4](./go/v4/)                              | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :x:                |
+| :construction:     | [Go v1](./go/v1/)                              | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Go v2](./go/v2/)                              | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Go v3](./go/v3/)                              | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Go v4](./go/v4/)                              | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :white_check_mark: |
+
+> [!WARNING]
+> In the Go profile, VS Code sometimes opens port 8082 on the IP address [:1]; simply change it to localhost.
 
 ## Prerequisites to Run:
 

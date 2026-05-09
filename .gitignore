@@ -2,3 +2,5 @@
 **/results_v*.txt
 **/table_go_v*.csv
 **/**.test
+**/**.prof
+**/**.out
