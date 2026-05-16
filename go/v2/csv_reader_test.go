@@ -42,7 +42,7 @@ func BenchmarkProcessLine(b *testing.B) {
                 p, _ := processLine(line)
                 localPoint = p
             }
-            globalPoint = localPoint 
+            _ = localPoint 
         })
     })
 }

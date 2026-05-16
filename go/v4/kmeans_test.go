@@ -2,16 +2,30 @@ package main
 
 import (
 	"runtime"
+	"sync"
 	"testing"
 )
 
 var (
 	globalCentroidIdx int
 	globalErr         error
+	cachedPoints      []Point
+	loadOnce          sync.Once
 )
 
+func getPointsOrFatal(b *testing.B) []Point {
+	loadOnce.Do(func() {
+		pts, err := LoadPoints("../../data/dataset_1000000x100_range_0.0_to_100.0.csv")
+		if err != nil {
+			b.Fatalf("Erro carregando pontos: %v", err)
+		}
+		cachedPoints = pts
+	})
+	return cachedPoints
+}
+
 func BenchmarkClustering_Step(b *testing.B) {
-	points, _ := LoadPoints("../../data/dataset_1000000x100_range_0.0_to_100.0.csv")
+	points := getPointsOrFatal(b)
 	numWorkers := runtime.NumCPU()
 	k, _ := Kmeans(3, points, 2026)
 
@@ -28,7 +42,7 @@ func BenchmarkClustering_Step(b *testing.B) {
 }
 
 func BenchmarkUpdateCentroids_Step(b *testing.B) {
-	points, _ := LoadPoints("../../data/dataset_1000000x100_range_0.0_to_100.0.csv")
+	points := getPointsOrFatal(b)
 	numWorkers := runtime.NumCPU()
 	k, _ := Kmeans(3, points, 2026)
 	_ = k.clustering(numWorkers)
@@ -49,7 +63,7 @@ func BenchmarkUpdateCentroids_Step(b *testing.B) {
 }
 
 func BenchmarkFindNearestCentroid(b *testing.B) {
-	points, _ := LoadPoints("../../data/dataset_1000000x100_range_0.0_to_100.0.csv")
+	points := getPointsOrFatal(b)
 	k, _ := Kmeans(3, points, 2026)
 	p := &points[0]
 
@@ -74,12 +88,15 @@ func BenchmarkFindNearestCentroid(b *testing.B) {
 }
 
 func BenchmarkKMeansFit(b *testing.B) {
-	points, _ := LoadPoints("../../data/dataset_1000000x100_range_0.0_to_100.0.csv")
+    points := getPointsOrFatal(b)
 
-	b.ReportAllocs()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		k, _ := Kmeans(3, points, 2026)
-		globalErr = k.Fit()
-	}
+    b.ReportAllocs()
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        iterPoints := make([]Point, len(points))
+        copy(iterPoints, points)
+
+        k, _ := Kmeans(3, iterPoints, 2026)
+        globalErr = k.Fit()
+    }
 }
