@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
+	"io"
 	"os"
 	"runtime"
 	"strconv"
@@ -27,7 +29,7 @@ func Segments(filePath string) ([]Segment, error) {
 	if err != nil {
 		return nil, err
 	}
-	totalSize := info.Size() 
+	totalSize := info.Size()
 	cores := runtime.NumCPU() * scalarForWorkers
 
 	targetSize := totalSize / int64(cores)
@@ -53,98 +55,104 @@ func Segments(filePath string) ([]Segment, error) {
 		}
 
 		buffer := make([]byte, 1)
+		extraBytes := int64(0)
 		for {
 			_, err := file.Read(buffer)
 			if err != nil {
 				break
 			}
+			extraBytes++
 			if buffer[0] == '\n' {
 				break
 			}
 		}
 
-		actualEnd, _ := file.Seek(0, 1)
+		actualEnd := endCandidate + extraBytes
 		segments = append(segments, Segment{start: start, size: actualEnd - start})
-		currentPos = actualEnd
+		currentPos = actualEnd 
 	}
 
 	return segments, nil
 }
 
-func LoadPoints(path string) ([]Point, error) {
-    segments, err := Segments(path)
-    if err != nil {
-        return nil, err
-    }
-    numSegments := len(segments)
-    partialResults := make ([][]Point, numSegments)
-    var wg sync.WaitGroup
+const cacheLineSize = 64
+type PaddedResult struct {
+	points []Point
+	_      [cacheLineSize]byte
+}
 
-    file, err := os.Open(path)
+func LoadPoints(path string) ([]Point, error) {
+	segments, err := Segments(path)
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	numSegments := len(segments)
+	partialResults := make([]PaddedResult, numSegments)
+	var wg sync.WaitGroup
 
-    for i := 0; i < numSegments; i++ {
-        wg.Add(1)
-        go func (index int, segment Segment)  {
-            defer wg.Done()
-            
-            var pointsPartition []Point
-			buffer := make([]byte, segment.size)
+	for i := 0; i < numSegments; i++ {
+		wg.Add(1)
+		go func(index int, segment Segment) {
+			defer wg.Done()
+			file, err := os.Open(path)
+			if err != nil {
+				return
+			}
+			defer file.Close()
 
-			_, err := file.ReadAt(buffer, segment.start)
+			_, err = file.Seek(segment.start, 0)
 			if err != nil {
 				return
 			}
 
-			remaining := buffer
+			limitReader := io.LimitReader(file, segment.size)
+			scanner := bufio.NewScanner(limitReader)
+
+			var pointsPartition []Point
+
 			if segment.start == 0 {
-				if idx := bytes.IndexByte(remaining, '\n'); idx != -1 {
-					remaining = remaining[idx+1:]
+				if scanner.Scan() {
 				}
 			}
 
-			lines := bytes.Split(remaining, []byte("\n"))
-			for _, line := range lines {
-				line = bytes.TrimSpace(line)
+			for scanner.Scan() {
+				line := bytes.TrimSpace(scanner.Bytes())
 				if len(line) > 0 {
 					p, err := processLine(line)
-                    if err != nil {
-                        return
-                    }
+					if err != nil {
+						continue 
+					}
 					if p != nil {
 						pointsPartition = append(pointsPartition, *p)
 					}
 				}
 			}
-			partialResults[index] = pointsPartition
-            
-        }(i, segments[i])
-    }
+			partialResults[index].points = pointsPartition
 
-    wg.Wait()
+		}(i, segments[i])
+	}
 
-    totalPoints := 0
-    for _, partition := range partialResults {
-        totalPoints += len(partition)
-    }
+	wg.Wait()
 
-    points := make([]Point, 0, totalPoints)
-    for _, partition := range partialResults {
-        if partition != nil {
-            points = append(points, partition...)
-        }
-    }
+	totalPoints := 0
+	for i := 0; i < numSegments; i++ {
+		totalPoints += len(partialResults[i].points)
+	}
 
-    return points, nil
+	points := make([]Point, 0, totalPoints)
+	for i := 0; i < numSegments; i++ {
+		if partialResults[i].points != nil {
+			points = append(points, partialResults[i].points...)
+		}
+	}
+
+	return points, nil
 }
 
 func processLine(line []byte) (*Point, error) {
 	parts := bytes.Split(line, []byte(","))
 	coords := make([]float64, len(parts))
-	
+
 	for i, part := range parts {
 		val, err := strconv.ParseFloat(string(bytes.TrimSpace(part)), 64)
 		if err != nil {
@@ -153,10 +161,10 @@ func processLine(line []byte) (*Point, error) {
 		coords[i] = val
 	}
 
-    point, err := NewPoint(coords)
-    if err != nil {
-        return nil, err
-    }
+	point, err := NewPoint(coords)
+	if err != nil {
+		return nil, err
+	}
 
 	return point, nil
 }

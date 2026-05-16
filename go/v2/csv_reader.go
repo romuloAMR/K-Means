@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
+	"io"
 	"os"
 	"runtime"
 	"strconv"
@@ -53,22 +55,30 @@ func Segments(filePath string) ([]Segment, error) {
 		}
 
 		buffer := make([]byte, 1)
+		extraBytes := int64(0)
 		for {
 			_, err := file.Read(buffer)
 			if err != nil {
 				break
 			}
+			extraBytes++
 			if buffer[0] == '\n' {
 				break
 			}
 		}
 
-		actualEnd, _ := file.Seek(0, 1)
+		actualEnd := endCandidate + extraBytes
 		segments = append(segments, Segment{start: start, size: actualEnd - start})
-		currentPos = actualEnd
+		currentPos = actualEnd 
 	}
 
 	return segments, nil
+}
+
+const cacheLineSize = 64
+type PaddedResult struct {
+	points []Point
+	_      [cacheLineSize]byte
 }
 
 func LoadPoints(path string) ([]Point, error) {
@@ -77,51 +87,50 @@ func LoadPoints(path string) ([]Point, error) {
 		return nil, err
 	}
 	numSegments := len(segments)
-	partialResults := make([][]Point, numSegments)
-    var wg sync.WaitGroup
+	partialResults := make([]PaddedResult, numSegments)
+	var wg sync.WaitGroup
 
-    file, err := os.Open(path)
-	if err != nil {
-		return nil, err
+	for i := 0; i < numSegments; i++ {
+		wg.Add(1)
+		go func(index int, segment Segment) {
+			defer wg.Done()
+			runtime.LockOSThread()
+        	defer runtime.UnlockOSThread()
+
+			file, err := os.Open(path)
+			if err != nil {
+				return
 			}
 			defer file.Close()
 
-			for i := 0; i < numSegments; i++ {
-        wg.Add(1)
-        go func (index int, segment Segment)  {
-            defer wg.Done()
-            runtime.LockOSThread()
-        	defer runtime.UnlockOSThread()
-            
-            var pointsPartition []Point
-			buffer := make([]byte, segment.size)
-
-			_, err := file.ReadAt(buffer, segment.start)
+			_, err = file.Seek(segment.start, 0)
 			if err != nil {
 				return
 			}
 
-			remaining := buffer
+			limitReader := io.LimitReader(file, segment.size)
+			scanner := bufio.NewScanner(limitReader)
+
+			var pointsPartition []Point
+
 			if segment.start == 0 {
-				if idx := bytes.IndexByte(remaining, '\n'); idx != -1 {
-					remaining = remaining[idx+1:]
+				if scanner.Scan() {
 				}
 			}
 
-			lines := bytes.Split(remaining, []byte("\n"))
-			for _, line := range lines {
-				line = bytes.TrimSpace(line)
+			for scanner.Scan() {
+				line := bytes.TrimSpace(scanner.Bytes())
 				if len(line) > 0 {
 					p, err := processLine(line)
-                    if err != nil {
-                        return
-                    }
+					if err != nil {
+						continue 
+					}
 					if p != nil {
 						pointsPartition = append(pointsPartition, *p)
 					}
 				}
 			}
-			partialResults[index] = pointsPartition
+			partialResults[index].points = pointsPartition
 
 		}(i, segments[i])
 	}
@@ -129,15 +138,15 @@ func LoadPoints(path string) ([]Point, error) {
 	wg.Wait()
 
 	totalPoints := 0
-	for _, partition := range partialResults {
-		totalPoints += len(partition)
+	for i := 0; i < numSegments; i++ {
+		totalPoints += len(partialResults[i].points)
 	}
 
 	points := make([]Point, 0, totalPoints)
-	for _, partition := range partialResults {
-		if partition != nil {
-            points = append(points, partition...)
-        }
+	for i := 0; i < numSegments; i++ {
+		if partialResults[i].points != nil {
+			points = append(points, partialResults[i].points...)
+		}
 	}
 
 	return points, nil
@@ -156,9 +165,9 @@ func processLine(line []byte) (*Point, error) {
 	}
 
 	point, err := NewPoint(coords)
-    if err != nil {
-        return nil, err
-    }
+	if err != nil {
+		return nil, err
+	}
 
 	return point, nil
 }
