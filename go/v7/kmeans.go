@@ -5,6 +5,7 @@ import (
 	"math"
 	"runtime"
 	"sync"
+	"sync/atomic"
 )
 
 type kmeans struct {
@@ -83,7 +84,7 @@ func (k *kmeans) updateCentroids(numWorkers int) error {
     for i := range centroidsSum {
         centroidsSum[i] = make([]float64, dim)
     }
-    counts := make([]int, k.numClusters)
+    counts := make([]atomic.Int64, k.numClusters)
 
     var mu sync.Mutex
     var wg sync.WaitGroup
@@ -119,10 +120,15 @@ func (k *kmeans) updateCentroids(numWorkers int) error {
                 localCounts[clusterId]++
             }
 
+            for c := 0; c < k.numClusters; c++ {
+                if localCounts[c] > 0 {
+                    counts[c].Add(int64(localCounts[c])) 
+                }
+            }
+
             mu.Lock()
             for c := 0; c < k.numClusters; c++ {
                 if localCounts[c] > 0 {
-                    counts[c] += localCounts[c]
                     for d := 0; d < dim; d++ {
                         centroidsSum[c][d] += localSums[c][d]
                     }
@@ -136,7 +142,7 @@ func (k *kmeans) updateCentroids(numWorkers int) error {
     wg.Wait()
 
     for c := 0; c < k.numClusters; c++ {
-        totalCount := counts[c]
+        totalCount := counts[c].Load()
 
         if totalCount > 0 {
             for d := 0; d < dim; d++ {

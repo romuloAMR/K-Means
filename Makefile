@@ -11,6 +11,7 @@ EXECS ?= 20
         run-go-v3 microbenchmark-go-v3 heisenbug-check-go-v3 profile-go-v3 saturation-go-v3\
         run-go-v4 microbenchmark-go-v4 heisenbug-check-go-v4 profile-go-v4 saturation-go-v4\
 		run-go-v6 microbenchmark-go-v6 heisenbug-check-go-v6 profile-go-v6 saturation-go-v6\
+		run-go-v7 microbenchmark-go-v7 heisenbug-check-go-v7 profile-go-v7 saturation-go-v7\
         run-java-v1 \
         run-java-v2 \
         run-java-v3 \
@@ -22,7 +23,7 @@ all: help
 help:
 	@echo "Available commands:"
 	@echo "  make create-data               - Runs code to create data"
-	@echo "  make run-go-vX                 - Runs the VX in Go (where X in (1,2,3,4,6))"
+	@echo "  make run-go-vX                 - Runs the VX in Go (where X in (1,2,3,4,6,7))"
 	@echo "  make microbenchmark-go-vX      - Microbenchmark of VX in Go"
 	@echo "  make heisenbug-check-go-vX     - Check heisenbug of VX in Go"
 	@echo "  make profile-go-vX             - Profile of VX in Go"
@@ -161,10 +162,34 @@ profile-go-v6:  clean-profile
 	@nohup go tool trace -http=:8082 go/v6/profile/trace.out > /dev/null 2>&1 &
 
 saturation-go-v6:
-	@echo "Running Macro Saturation Test Go V4 (THREADS=$(THREADS), EXECS=$(EXECS))..."
+	@echo "Running Macro Saturation Test Go V6 (THREADS=$(THREADS), EXECS=$(EXECS))..."
 	cd $(GO_DIR) && \
 	go test -v -tags saturation -run=^TestMacroBenchmarkSaturation$$ ./v6/ -args -threads=$(THREADS) -execs=$(EXECS)
 
+run-go-v7:
+	@echo "Run Go V7..."
+	cd $(GO_DIR) && go run ./v7/
+
+microbenchmark-go-v7:
+	@echo "Microbenchmark Go V7..."
+	cd $(GO_DIR) && \
+	go test $(BENCH_FLAGS_GO) ./v7/ > results_v7.txt && \
+	benchstat results_v7.txt
+
+heisenbug-check-go-v7:
+	@echo "Check Heisenbugs Go V7..."
+	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v7/...
+
+profile-go-v7:  clean-profile
+	@echo "Opening profiles of CPU, Heap and Trace V7..."
+	@nohup go tool pprof -http=:8080 go/v7/profile/cpu.prof > /dev/null 2>&1 &
+	@nohup go tool pprof -http=:8081 go/v7/profile/heap.prof > /dev/null 2>&1 &
+	@nohup go tool trace -http=:8082 go/v7/profile/trace.out > /dev/null 2>&1 &
+
+saturation-go-v7:
+	@echo "Running Macro Saturation Test Go V7 (THREADS=$(THREADS), EXECS=$(EXECS))..."
+	cd $(GO_DIR) && \
+	go test -v -tags saturation -run=^TestMacroBenchmarkSaturation$$ ./v7/ -args -threads=$(THREADS) -execs=$(EXECS)
 
 # 3. JAVA
 run-java-v1:
