@@ -157,7 +157,7 @@ func (k *kmeans) updateCentroids(numWorkers int) error {
 
 func (k *kmeans) clustering(numWorkers int) error {
 	grainSize := (k.numPoints + numWorkers - 1) / numWorkers
-	var mu sync.Mutex
+	//var mu sync.Mutex
 	var wg sync.WaitGroup
 	errChan := make(chan error, numWorkers)
 
