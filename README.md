@@ -7,6 +7,7 @@ Implementation and optimisation of the K-Means algorithm in Java and Go language
 - **V3:** Switching from Platform Threads to Virtual Threads
 - **V4:** Switching from a virtual thread to a hybrid thread model
 - **V5:** Use of *volatile*
+- **V6:** Use of *lock*
 
 > [!NOTE]
 > From version 1 to version 5, the code was designed in a Java-like format; Go simply replicated this, which may result in lower-than-expected performance
@@ -27,6 +28,7 @@ Implementation and optimisation of the K-Means algorithm in Java and Go language
 | :construction:     | [Go v2](./go/v2/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Go v3](./go/v3/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Go v4](./go/v4/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Go v6](./go/v6/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 
 > [!WARNING]
 > In the Go profile, VS Code sometimes opens port 8082 on the IP address [:1]; simply change it to localhost.
