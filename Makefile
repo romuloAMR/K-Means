@@ -12,6 +12,7 @@ EXECS ?= 20
         run-go-v4 microbenchmark-go-v4 heisenbug-check-go-v4 profile-go-v4 saturation-go-v4\
 		run-go-v6 microbenchmark-go-v6 heisenbug-check-go-v6 profile-go-v6 saturation-go-v6\
 		run-go-v7 microbenchmark-go-v7 heisenbug-check-go-v7 profile-go-v7 saturation-go-v7\
+		run-go-v10 microbenchmark-go-v10 heisenbug-check-go-v10 profile-go-v10 saturation-go-v10\
         run-java-v1 \
         run-java-v2 \
         run-java-v3 \
@@ -23,7 +24,7 @@ all: help
 help:
 	@echo "Available commands:"
 	@echo "  make create-data               - Runs code to create data"
-	@echo "  make run-go-vX                 - Runs the VX in Go (where X in (1,2,3,4,6,7))"
+	@echo "  make run-go-vX                 - Runs the VX in Go (where X in (1,2,3,4,6,7,10))"
 	@echo "  make microbenchmark-go-vX      - Microbenchmark of VX in Go"
 	@echo "  make heisenbug-check-go-vX     - Check heisenbug of VX in Go"
 	@echo "  make profile-go-vX             - Profile of VX in Go"
@@ -190,6 +191,31 @@ saturation-go-v7:
 	@echo "Running Macro Saturation Test Go V7 (THREADS=$(THREADS), EXECS=$(EXECS))..."
 	cd $(GO_DIR) && \
 	go test -v -tags saturation -run=^TestMacroBenchmarkSaturation$$ ./v7/ -args -threads=$(THREADS) -execs=$(EXECS)
+
+run-go-v10:
+	@echo "Run Go V10..."
+	cd $(GO_DIR) && go run ./v10/
+
+microbenchmark-go-v10:
+	@echo "Microbenchmark Go V10..."
+	cd $(GO_DIR) && \
+	go test $(BENCH_FLAGS_GO) ./v10/ > results_v10.txt && \
+	benchstat results_v10.txt
+
+heisenbug-check-go-v10:
+	@echo "Check Heisenbugs Go V10..."
+	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v10/...
+
+profile-go-v10:  clean-profile
+	@echo "Opening profiles of CPU, Heap and Trace V10..."
+	@nohup go tool pprof -http=:8080 go/v10/profile/cpu.prof > /dev/null 2>&1 &
+	@nohup go tool pprof -http=:8081 go/v10/profile/heap.prof > /dev/null 2>&1 &
+	@nohup go tool trace -http=:8082 go/v10/profile/trace.out > /dev/null 2>&1 &
+
+saturation-go-v10:
+	@echo "Running Macro Saturation Test Go V10 (THREADS=$(THREADS), EXECS=$(EXECS))..."
+	cd $(GO_DIR) && \
+	go test -v -tags saturation -run=^TestMacroBenchmarkSaturation$$ ./v10/ -args -threads=$(THREADS) -execs=$(EXECS)
 
 # 3. JAVA
 run-java-v1:
