@@ -21,24 +21,25 @@ Implementation and optimisation of the K-Means algorithm in Java and Go language
 
 ## Table Versions:
 
-| Status             | Name                                           | Code               | Microbenchmark     | Macrobenchmark     | Heisenbugs Test    | Profile            |
-| :---:              | :---                                           | :---:              | :---:              | :---:              | :---:              | :---:              |
-| :construction:     | [Java v1](./java/v1/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
-| :construction:     | [Java v2](./java/v2/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
-| :construction:     | [Java v3](./java/v3/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
-| :construction:     | [Java v4](./java/v4/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
-| :construction:     | [Java v5](./java/v5/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
-| :construction:     | [Java v6](./java/v6/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
-| :construction:     | [Java v7](./java/v7/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
-| :construction:     | [Java v8](./java/v8/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
-| :construction:     | [Java v9](./java/v9/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
-| :construction:     | [Go v1](./go/v1/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| :construction:     | [Go v2](./go/v2/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| :construction:     | [Go v3](./go/v3/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| :construction:     | [Go v4](./go/v4/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| :construction:     | [Go v6](./go/v6/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| :construction:     | [Go v7](./go/v7/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| :construction:     | [Go v10](./go/v10/)                            | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Status             | Name                                             | Code               | Microbenchmark     | Macrobenchmark     | Heisenbugs Test    | Profile            |
+| :---:              | :---                                             | :---:              | :---:              | :---:              | :---:              | :---:              |
+| :construction:     | [Java v1](./java/v1/src/main/java/com/kmeans/)   | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
+| :construction:     | [Java v2](./java/v2/src/main/java/com/kmeans/)   | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
+| :construction:     | [Java v3](./java/v3/src/main/java/com/kmeans/)   | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
+| :construction:     | [Java v4](./java/v4/src/main/java/com/kmeans/)   | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
+| :construction:     | [Java v5](./java/v5/src/main/java/com/kmeans/)   | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
+| :construction:     | [Java v6](./java/v6/src/main/java/com/kmeans/)   | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
+| :construction:     | [Java v7](./java/v7/src/main/java/com/kmeans/)   | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
+| :construction:     | [Java v8](./java/v8/src/main/java/com/kmeans/)   | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
+| :construction:     | [Java v9](./java/v9/src/main/java/com/kmeans/)   | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
+| :construction:     | [Java v10](./java/v10/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
+| :construction:     | [Go v1](./go/v1/)                                | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Go v2](./go/v2/)                                | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Go v3](./go/v3/)                                | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Go v4](./go/v4/)                                | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Go v6](./go/v6/)                                | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Go v7](./go/v7/)                                | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Go v10](./go/v10/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 
 > [!WARNING]
 > In the Go profile, VS Code sometimes opens port 8082 on the IP address [:1]; simply change it to localhost.
