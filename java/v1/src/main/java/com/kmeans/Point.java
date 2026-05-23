@@ -54,6 +54,10 @@ public class Point {
         return position[i];
     }
 
+    public double[] getCoordinates(){
+        return position;
+    }
+
     public int getDimension() {
         return dimension;
     }
