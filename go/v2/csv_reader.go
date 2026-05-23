@@ -3,11 +3,11 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"io"
 	"os"
 	"runtime"
 	"strconv"
 	"sync"
+	"syscall"
 )
 
 type Segment struct {
@@ -86,6 +86,25 @@ func LoadPoints(path string) ([]Point, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	info, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	totalSize := info.Size()
+
+	data, err := syscall.Mmap(int(file.Fd()), 0, int(totalSize), syscall.PROT_READ, syscall.MAP_SHARED)
+	if err != nil {
+		return nil, err
+	}
+	defer syscall.Munmap(data)
+
 	numSegments := len(segments)
 	partialResults := make([]PaddedResult, numSegments)
 	var wg sync.WaitGroup
@@ -95,21 +114,11 @@ func LoadPoints(path string) ([]Point, error) {
 		go func(index int, segment Segment) {
 			defer wg.Done()
 			runtime.LockOSThread()
-        	defer runtime.UnlockOSThread()
+			defer runtime.UnlockOSThread()
 
-			file, err := os.Open(path)
-			if err != nil {
-				return
-			}
-			defer file.Close()
-
-			_, err = file.Seek(segment.start, 0)
-			if err != nil {
-				return
-			}
-
-			limitReader := io.LimitReader(file, segment.size)
-			scanner := bufio.NewScanner(limitReader)
+			workerData := data[segment.start : segment.start+segment.size]
+			reader := bytes.NewReader(workerData)
+			scanner := bufio.NewScanner(reader)
 
 			var pointsPartition []Point
 
