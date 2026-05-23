@@ -7,7 +7,7 @@ Implementation and optimisation of the K-Means algorithm in Java and Go language
 - **V3:** Switching from Platform Threads to Virtual Threads
 - **V4:** Switching from a virtual thread to a hybrid thread model
 - **V5:** Use of *volatile*
-- **V6:** Use of *lock*
+- **V6:** Use of *mutex*
 - **V7:** Use of *atomics*
 - **v10:** Use of *Communication between threads*
 
@@ -26,6 +26,7 @@ Implementation and optimisation of the K-Means algorithm in Java and Go language
 | :construction:     | [Java v3](./java/v3/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
 | :construction:     | [Java v4](./java/v4/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
 | :construction:     | [Java v5](./java/v5/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
+| :construction:     | [Java v6](./java/v6/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
 | :construction:     | [Go v1](./go/v1/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Go v2](./go/v2/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Go v3](./go/v3/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
@@ -54,5 +55,7 @@ cd K-Means
 
 
 ## Runs:
-To run the programs, simply use `make` or `make help` to view the options and select the one you want
-v6
+To run the programs, simply use `make` or `make help` to view the options and select the one you want like:
+```sh
+make run-java-v2
+```
