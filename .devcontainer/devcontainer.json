@@ -6,11 +6,11 @@
   "customizations": {
     "vscode": {
       "settings": {
-        "java.jdt.ls.java.home": "/usr/lib/jvm/jdk-25.0.2-oracle-x64",
+        "java.jdt.ls.java.home": "/usr/lib/jvm/java-25-latest",
         "java.configuration.runtimes": [
             {
                 "name": "JavaSE-25",
-                "path": "/usr/lib/jvm/jdk-25.0.2-oracle-x64",
+                "path": "/usr/lib/jvm/java-25-latest",
                 "default": true
             }
         ],

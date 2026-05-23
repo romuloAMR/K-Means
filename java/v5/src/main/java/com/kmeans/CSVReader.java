@@ -1,5 +1,6 @@
 package com.kmeans;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -14,14 +15,21 @@ public class CSVReader {
     private static final int SCALAR_FOR_WORKERS_READ = 1;
     private static final int ONE_MB = 1048576;
     private record Segment(long start, long size) {}
+    private static class PaddedResult {
+        final List<Point> points = new ArrayList<>();
+        long p1, p2, p3, p4, p5, p6, p7, p8; 
+    }
 
     private static List<Segment> getSegments(Path path) throws IOException {
         List<Segment> segments = new ArrayList<>();
         try (RandomAccessFile raf = new RandomAccessFile(path.toFile(), "r")) {
             long totalSize = raf.length();
             int cores = Runtime.getRuntime().availableProcessors() * SCALAR_FOR_WORKERS_READ;
-            long targetSize = Math.max(totalSize / cores, ONE_MB);
-            long currentPos = 0;
+            long targetSize = totalSize / cores;
+            if (targetSize < ONE_MB) {
+                targetSize = ONE_MB;
+            }
+            long currentPos = 0; 
 
             while (currentPos < totalSize) {
                 long start = currentPos;
@@ -33,9 +41,19 @@ public class CSVReader {
                 }
 
                 raf.seek(endCandidate);
-                while (raf.getFilePointer() < totalSize && raf.read() != '\n');
-                
-                long actualEnd = raf.getFilePointer();
+                long extraBytes = 0;
+                while (true) {
+                    int b = raf.read();
+                    if (b == -1) {
+                        break;
+                    }
+                    extraBytes++;
+                    if (b == '\n') {
+                        break;
+                    }
+                }
+
+                long actualEnd = endCandidate + extraBytes;
                 segments.add(new Segment(start, actualEnd - start));
                 currentPos = actualEnd;
             }
@@ -46,37 +64,36 @@ public class CSVReader {
     public static List<Point> loadPoints(Path path) throws Exception {
         List<Segment> segments = getSegments(path);
         int numSegments = segments.size();
-        @SuppressWarnings("unchecked")
-        List<Point>[] partialResults = new List[numSegments];
+        PaddedResult[] partialResults = new PaddedResult[numSegments];
         Thread[] threads = new Thread[numSegments];
 
         for (int i = 0; i < numSegments; i++) {
             final int index = i;
             Segment segment = segments.get(i);
-
-            threads[i] = Thread.ofVirtual().start(() -> {
-                List<Point> pointsPartition = new ArrayList<Point>();
+            partialResults[index] = new PaddedResult();
+        
+            threads[i] = Thread.ofPlatform().start(() -> {
+                List<Point> pointsPartition = partialResults[index].points;
                 try (FileChannel ch = FileChannel.open(path, StandardOpenOption.READ)) {
                     ByteBuffer buffer = ch.map(FileChannel.MapMode.READ_ONLY, segment.start(), segment.size());
-
+                
                     if (segment.start() == 0) {
                         while (buffer.hasRemaining() && buffer.get() != '\n');
                     }
-
-                    StringBuilder lineBuilder = new StringBuilder();
+                
+                    ByteArrayOutputStream lineBuffer = new ByteArrayOutputStream();
                     while (buffer.hasRemaining()) {
                         byte b = buffer.get();
                         if (b == '\n') {
-                            processLine(lineBuilder.toString(), pointsPartition);
-                            lineBuilder.setLength(0);
+                            processLine(lineBuffer.toByteArray(), pointsPartition);
+                            lineBuffer.reset();
                         } else if (b != '\r') {
-                            lineBuilder.append((char) b);
+                            lineBuffer.write(b);
                         }
                     }
-                    if (lineBuilder.length() > 0) {
-                        processLine(lineBuilder.toString(), pointsPartition);
+                    if (lineBuffer.size() > 0) {
+                        processLine(lineBuffer.toByteArray(), pointsPartition);
                     }
-                    partialResults[index] = pointsPartition;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -85,25 +102,31 @@ public class CSVReader {
 
         List<Point> points = new ArrayList<>();
         for (int i = 0; i < threads.length; i++) {
-            while (threads[i].isAlive()) {}
-            if (partialResults[i] != null) {
-                points.addAll(partialResults[i]);
+            if (threads[i] == null) continue;
+            while (threads[i].isAlive()) {
+                Thread.yield();
+            }
+            if (partialResults[i] != null && partialResults[i].points != null) {
+                points.addAll(partialResults[i].points);
             }
         }
 
         return points;
     }
 
-    private static void processLine(String currentLine, List<Point> points) {
-        if (currentLine.isEmpty()) return;
+    private static void processLine(byte[] lineBytes, List<Point> pointsPartition) {
+        String currentLine = new String(lineBytes).trim();
+        if (currentLine.isEmpty()) {
+            return;
+        }
+
         try {
             String[] parts = currentLine.split(",");
             double[] coords = new double[parts.length];
             for (int i = 0; i < parts.length; i++) {
                 coords[i] = Double.parseDouble(parts[i].trim());
             }
-            points.add(new Point(coords));
-        } catch (NumberFormatException e) {
-        }
+            pointsPartition.add(new Point(coords)); 
+        } catch (NumberFormatException e) {}
     }
 }

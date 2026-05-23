@@ -8,6 +8,7 @@ RUN apt update && apt upgrade -y && \
 RUN wget https://download.oracle.com/java/25/latest/jdk-25_linux-x64_bin.deb && \
     apt update && \
     apt install -y ./jdk-25_linux-x64_bin.deb && \
+    ln -s $(ls -d /usr/lib/jvm/jdk-25*-oracle-x64) /usr/lib/jvm/java-25-latest && \
     rm jdk-25_linux-x64_bin.deb && \
     rm -rf /var/lib/apt/lists/*
 

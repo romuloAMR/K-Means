@@ -83,7 +83,12 @@ public class Kmeans {
             });
         }
 
-        for (Thread t : threads) while (t.isAlive()){}
+        for (Thread t : threads) {
+            if (t == null) continue;
+            while (t.isAlive()){
+                Thread.yield();
+            }
+        }
 
         for (int c = 0; c < numClusters; c++) {
             double[] finalSum = new double[dim];
@@ -122,7 +127,12 @@ public class Kmeans {
             });
         }
 
-        for (Thread t : threads) while (t.isAlive()){}
+        for (Thread t : threads) {
+            if (t == null) continue;
+            while (t.isAlive()){
+                Thread.yield();
+            }
+        }
     }
 
     public void fit() {
