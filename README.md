@@ -10,6 +10,7 @@ Implementation and optimisation of the K-Means algorithm in Java and Go language
 - **V6:** Use of *mutex*
 - **V7:** Use of *atomics*
 - **V8:** Use of *Java Parallel GC*
+- **V9:** Use of *Java ZGC*
 - **v10:** Use of *Communication between threads*
 
 > [!NOTE]
@@ -30,6 +31,7 @@ Implementation and optimisation of the K-Means algorithm in Java and Go language
 | :construction:     | [Java v6](./java/v6/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
 | :construction:     | [Java v7](./java/v7/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
 | :construction:     | [Java v8](./java/v8/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
+| :construction:     | [Java v9](./java/v9/src/main/java/com/kmeans/) | :white_check_mark: | :x:                | :x:                | :x:                | :x:                |
 | :construction:     | [Go v1](./go/v1/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Go v2](./go/v2/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Go v3](./go/v3/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
