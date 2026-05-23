@@ -6,23 +6,23 @@ THREADS ?= 4
 EXECS ?= 20
 
 .PHONY: all help create-data \
-        run-go-v1 microbenchmark-go-v1 heisenbug-check-go-v1 profile-go-v1 saturation-go-v1\
-        run-go-v2 microbenchmark-go-v2 heisenbug-check-go-v2 profile-go-v2 saturation-go-v2\
-        run-go-v3 microbenchmark-go-v3 heisenbug-check-go-v3 profile-go-v3 saturation-go-v3\
-        run-go-v4 microbenchmark-go-v4 heisenbug-check-go-v4 profile-go-v4 saturation-go-v4\
-		run-go-v6 microbenchmark-go-v6 heisenbug-check-go-v6 profile-go-v6 saturation-go-v6\
-		run-go-v7 microbenchmark-go-v7 heisenbug-check-go-v7 profile-go-v7 saturation-go-v7\
-		run-go-v10 microbenchmark-go-v10 heisenbug-check-go-v10 profile-go-v10 saturation-go-v10\
-        run-java-v1 \
-        run-java-v2 \
-        run-java-v3 \
-        run-java-v4 \
-        run-java-v5 \
-        run-java-v6 \
-        run-java-v7 \
-        run-java-v8 \
-        run-java-v9 \
-        run-java-v10
+        run-go-v1    microbenchmark-go-v1  heisenbug-check-go-v1  profile-go-v1  saturation-go-v1\
+        run-go-v2    microbenchmark-go-v2  heisenbug-check-go-v2  profile-go-v2  saturation-go-v2\
+        run-go-v3    microbenchmark-go-v3  heisenbug-check-go-v3  profile-go-v3  saturation-go-v3\
+        run-go-v4    microbenchmark-go-v4  heisenbug-check-go-v4  profile-go-v4  saturation-go-v4\
+		run-go-v6    microbenchmark-go-v6  heisenbug-check-go-v6  profile-go-v6  saturation-go-v6\
+		run-go-v7    microbenchmark-go-v7  heisenbug-check-go-v7  profile-go-v7  saturation-go-v7\
+		run-go-v10   microbenchmark-go-v10 heisenbug-check-go-v10 profile-go-v10 saturation-go-v10\
+        run-java-v1  profile-java-v1 \
+        run-java-v2  profile-java-v2 \
+        run-java-v3  profile-java-v3 \
+        run-java-v4  profile-java-v4 \
+        run-java-v5  profile-java-v5 \
+        run-java-v6  profile-java-v6 \
+        run-java-v7  profile-java-v7 \
+        run-java-v8  profile-java-v8 \
+        run-java-v9  profile-java-v9 \
+        run-java-v10 profile-java-v10
 
 all: help
 
@@ -36,6 +36,7 @@ help:
 	@echo "  make saturation-go-vX          - Saturation test of VX in Go"
 	@echo "                                   Example: make saturation-go-v2 THREADS=8 EXECS=40"
 	@echo "  make run-java-vX               - Runs the VX in Java (where X in (1,2,3,4,5,6,7,8,9,10))"
+	@echo "  make profile-java-vX           - Profile of VX in Go"
 
 # 1. Python
 create-data:
@@ -227,38 +228,78 @@ run-java-v1:
 	@echo "Run Java V1..."
 	cd $(JAVA_DIR) && mvn compile exec:java -pl v1
 
+profile-java-v1:
+	@echo "Profile Java V1..."
+	cd $(JAVA_DIR) && mkdir -p v1/target && mvn exec:exec -pl v1 -Dexec.executable="java" -Dexec.args="-XX:StartFlightRecording=disk=true,dumponexit=true,filename=target/kmeans-v1.jfr,settings=profile -classpath %classpath com.kmeans.Main"
+
 run-java-v2:
 	@echo "Run Java V2..."
 	cd $(JAVA_DIR) && mvn compile exec:java -pl v2
+
+profile-java-v2:
+	@echo "Profile Java V2..."
+	cd $(JAVA_DIR) && mkdir -p v2/target && mvn exec:exec -pl v2 -Dexec.executable="java" -Dexec.args="-XX:StartFlightRecording=disk=true,dumponexit=true,filename=target/kmeans-v2.jfr,settings=profile -classpath %classpath com.kmeans.Main"
 
 run-java-v3:
 	@echo "Run Java V3..."
 	cd $(JAVA_DIR) && mvn compile exec:java -pl v3
 
+profile-java-v3:
+	@echo "Profile Java V3..."
+	cd $(JAVA_DIR) && mkdir -p v3/target && mvn exec:exec -pl v3 -Dexec.executable="java" -Dexec.args="-XX:StartFlightRecording=disk=true,dumponexit=true,filename=target/kmeans-v3.jfr,settings=profile -classpath %classpath com.kmeans.Main"
+
 run-java-v4:
 	@echo "Run Java V4..."
 	cd $(JAVA_DIR) && mvn compile exec:java -pl v4
+
+profile-java-v4:
+	@echo "Profile Java V4..."
+	cd $(JAVA_DIR) && mkdir -p v4/target && mvn exec:exec -pl v4 -Dexec.executable="java" -Dexec.args="-XX:StartFlightRecording=disk=true,dumponexit=true,filename=target/kmeans-v4.jfr,settings=profile -classpath %classpath com.kmeans.Main"
 
 run-java-v5:
 	@echo "Run Java V5..."
 	cd $(JAVA_DIR) && mvn compile exec:java -pl v5
 
+profile-java-v5:
+	@echo "Profile Java V5..."
+	cd $(JAVA_DIR) && mkdir -p v5/target && mvn exec:exec -pl v5 -Dexec.executable="java" -Dexec.args="-XX:StartFlightRecording=disk=true,dumponexit=true,filename=target/kmeans-v5.jfr,settings=profile -classpath %classpath com.kmeans.Main"
+
 run-java-v6:
 	@echo "Run Java V6..."
 	cd $(JAVA_DIR) && mvn compile exec:java -pl v6
+
+profile-java-v6:
+	@echo "Profile Java V6..."
+	cd $(JAVA_DIR) && mkdir -p v6/target && mvn exec:exec -pl v6 -Dexec.executable="java" -Dexec.args="-XX:StartFlightRecording=disk=true,dumponexit=true,filename=target/kmeans-v6.jfr,settings=profile -classpath %classpath com.kmeans.Main"
 
 run-java-v7:
 	@echo "Run Java V7..."
 	cd $(JAVA_DIR) && mvn compile exec:java -pl v7
 
+profile-java-v7:
+	@echo "Profile Java V7..."
+	cd $(JAVA_DIR) && mkdir -p v7/target && mvn exec:exec -pl v7 -Dexec.executable="java" -Dexec.args="-XX:StartFlightRecording=disk=true,dumponexit=true,filename=target/kmeans-v7.jfr,settings=profile -classpath %classpath com.kmeans.Main"
+
 run-java-v8:
 	@echo "Run Java V8..."
 	cd $(JAVA_DIR) && mvn compile exec:java -pl v8 -Dexec.vmArgs="-XX:+UseParallelGC"
+
+profile-java-v8:
+	@echo "Profile Java V8..."
+	cd $(JAVA_DIR) && mkdir -p v8/target && mvn exec:exec -pl v8 -Dexec.executable="java" -Dexec.args="-XX:+UseParallelGC -XX:StartFlightRecording=disk=true,dumponexit=true,filename=target/kmeans-v8.jfr,settings=profile -classpath %classpath com.kmeans.Main"
 
 run-java-v9:
 	@echo "Run Java V9..."
 	cd $(JAVA_DIR) && mvn compile exec:java -pl v9 -Dexec.vmArgs="-XX:+UseZGC"
 
+profile-java-v9:
+	@echo "Profile Java V9..."
+	cd $(JAVA_DIR) && mkdir -p v9/target && mvn exec:exec -pl v9 -Dexec.executable="java" -Dexec.args="-XX:+UseZGC -XX:StartFlightRecording=disk=true,dumponexit=true,filename=target/kmeans-v9.jfr,settings=profile -classpath %classpath com.kmeans.Main"
+
 run-java-v10:
 	@echo "Run Java V10..."
 	cd $(JAVA_DIR) && mvn compile exec:java -pl v10
+
+profile-java-v10:
+	@echo "Profile Java V10..."
+	cd $(JAVA_DIR) && mkdir -p v10/target && mvn exec:exec -pl v10 -Dexec.executable="java" -Dexec.args="-XX:StartFlightRecording=disk=true,dumponexit=true,filename=target/kmeans-v10.jfr,settings=profile -classpath %classpath com.kmeans.Main"
