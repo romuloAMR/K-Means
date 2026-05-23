@@ -17,6 +17,7 @@ public class CSVReader {
     private record Segment(long start, long size) {}
     private static class PaddedResult {
         final List<Point> points = new ArrayList<>();
+        @SuppressWarnings("unused")
         long p1, p2, p3, p4, p5, p6, p7, p8; 
     }
 
