@@ -18,7 +18,8 @@ EXECS ?= 20
         run-java-v3 \
         run-java-v4 \
         run-java-v5 \
-        run-java-v6
+        run-java-v6 \
+        run-java-v7
 
 all: help
 
@@ -31,7 +32,7 @@ help:
 	@echo "  make profile-go-vX             - Profile of VX in Go"
 	@echo "  make saturation-go-vX          - Saturation test of VX in Go"
 	@echo "                                   Example: make saturation-go-v2 THREADS=8 EXECS=40"
-	@echo "  make run-java-vX               - Runs the VX in Java (where X in (1,2,3,4,5,6))"
+	@echo "  make run-java-vX               - Runs the VX in Java (where X in (1,2,3,4,5,6,7))"
 
 # 1. Python
 create-data:
@@ -242,3 +243,7 @@ run-java-v5:
 run-java-v6:
 	@echo "Run Java V6..."
 	cd $(JAVA_DIR) && mvn compile exec:java -pl v6
+
+run-java-v7:
+	@echo "Run Java V7..."
+	cd $(JAVA_DIR) && mvn compile exec:java -pl v7
