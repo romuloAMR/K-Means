@@ -33,7 +33,7 @@ public class Kmeans {
         }
     }
 
-    private int findNearestCentroid(Point p) {
+    public int findNearestCentroid(Point p) {
         double minDistance = Double.MAX_VALUE;
         int nearestIndex = -1;
         
@@ -56,7 +56,7 @@ public class Kmeans {
         return true;
     }
 
-    private void updateCentroids(int numWorkers)  throws InterruptedException {
+    public void updateCentroids(int numWorkers)  throws InterruptedException {
         int dim = this.points[0].getDimension();
         double[][][] sumsPartial = new double[numWorkers][numClusters][dim];
         int[][] countsPartial = new int[numWorkers][numClusters];
@@ -110,7 +110,7 @@ public class Kmeans {
         }
     }
 
-    private void clustering(int numWorkers) throws InterruptedException {
+    public void clustering(int numWorkers) throws InterruptedException {
         Thread[] threads = new Thread[numWorkers];
         int grainSize = (this.numPoints + numWorkers - 1) / numWorkers; 
 
@@ -155,6 +155,10 @@ public class Kmeans {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public int[] getAssignments() {
+        return this.assignments; 
     }
 
     public Point[] getCentroids() {

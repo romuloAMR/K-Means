@@ -36,7 +36,7 @@ public class Kmeans {
         }
     }
 
-    private void updateCentroids() {
+    public void updateCentroids() {
         List<Point> newCentroids = new ArrayList<>();
 
         for (int i = 0; i < this.numClusters; i++) {
@@ -61,7 +61,7 @@ public class Kmeans {
         this.centroids = newCentroids;
     }
 
-    private int findNearestCentroid(Point p) {
+    public int findNearestCentroid(Point p) {
         double minDistance = Double.MAX_VALUE;
         int nearestIndex = -1;
         

@@ -81,14 +81,20 @@ public class CSVReader {
                     while (buffer.hasRemaining()) {
                         byte b = buffer.get();
                         if (b == '\n') {
-                            processLine(lineBuffer.toByteArray(), pointsPartition);
+                            Point p = processLine(lineBuffer.toByteArray());
+                            if (p != null) {
+                                pointsPartition.add(p);
+                            }
                             lineBuffer.reset();
                         } else if (b != '\r') {
                             lineBuffer.write(b);
                         }
                     }
                     if (lineBuffer.size() > 0) {
-                        processLine(lineBuffer.toByteArray(), pointsPartition);
+                        Point p = processLine(lineBuffer.toByteArray());
+                        if (p != null) {
+                            pointsPartition.add(p);
+                        }
                     }
                     
                     synchronized (mutex) {
@@ -111,10 +117,10 @@ public class CSVReader {
         return points;
     }
 
-    private static void processLine(byte[] lineBytes, List<Point> pointsPartition) {
+    public static Point processLine(byte[] lineBytes) {
         String currentLine = new String(lineBytes).trim();
         if (currentLine.isEmpty()) {
-            return;
+            return null;
         }
 
         try {
@@ -123,7 +129,9 @@ public class CSVReader {
             for (int i = 0; i < parts.length; i++) {
                 coords[i] = Double.parseDouble(parts[i].trim());
             }
-            pointsPartition.add(new Point(coords)); 
-        } catch (NumberFormatException e) {}
+            return new Point(coords); 
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }
