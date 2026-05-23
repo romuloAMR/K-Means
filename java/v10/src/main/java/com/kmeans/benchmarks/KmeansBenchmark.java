@@ -21,7 +21,7 @@ public class KmeansBenchmark {
 
     @Setup(Level.Trial)
     public void setupTrial() throws Exception {
-        Path path = Paths.get("../../data/dataset_1000000x100_range_0.0_to_100.0.csv");
+        Path path = Paths.get("./data/dataset_1000000x100_range_0.0_to_100.0.csv");
         this.cachedPoints = CSVReader.loadPoints(path);
         this.numWorkers = Runtime.getRuntime().availableProcessors();
     }

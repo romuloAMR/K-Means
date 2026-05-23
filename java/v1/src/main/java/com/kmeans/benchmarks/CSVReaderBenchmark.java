@@ -15,7 +15,7 @@ public class CSVReaderBenchmark {
 
     @State(Scope.Benchmark)
     public static class FileState {
-        public String path = "../../data/dataset_1000000x100_range_0.0_to_100.0.csv";
+        public String path = "./data/dataset_1000000x100_range_0.0_to_100.0.csv";
     }
 
     @State(Scope.Benchmark)
