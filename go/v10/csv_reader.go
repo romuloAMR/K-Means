@@ -1,167 +1,189 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
-	"io"
-	"os"
-	"runtime"
-	"strconv"
-	"sync"
+    "bufio"
+    "bytes"
+    "os"
+    "runtime"
+    "strconv"
+    "sync"
+    "syscall"
 )
 
 type Segment struct {
-	start int64
-	size  int64
+    start int64
+    size  int64
 }
 
 func Segments(filePath string) ([]Segment, error) {
-	const oneMB = 1048576
-	const scalarForWorkers = 1
+    const oneMB = 1048576
+    const scalarForWorkers = 1
 
-	file, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
+    file, err := os.Open(filePath)
+    if err != nil {
+        return nil, err
+    }
+    defer file.Close()
 
-	info, err := file.Stat()
-	if err != nil {
-		return nil, err
-	}
-	totalSize := info.Size()
-	cores := runtime.NumCPU() * scalarForWorkers
+    info, err := file.Stat()
+    if err != nil {
+        return nil, err
+    }
+    totalSize := info.Size()
+    cores := runtime.NumCPU() * scalarForWorkers
 
-	targetSize := totalSize / int64(cores)
-	if targetSize < oneMB {
-		targetSize = oneMB
-	}
+    targetSize := totalSize / int64(cores)
+    if targetSize < oneMB {
+        targetSize = oneMB
+    }
 
-	var segments []Segment
-	var currentPos int64 = 0
+    var segments []Segment
+    var currentPos int64 = 0
 
-	for currentPos < totalSize {
-		start := currentPos
-		endCandidate := currentPos + targetSize
+    for currentPos < totalSize {
+        start := currentPos
+        endCandidate := currentPos + targetSize
 
-		if endCandidate >= totalSize {
-			segments = append(segments, Segment{start: start, size: totalSize - start})
-			break
-		}
+        if endCandidate >= totalSize {
+            segments = append(segments, Segment{start: start, size: totalSize - start})
+            break
+        }
 
-		_, err := file.Seek(endCandidate, 0)
-		if err != nil {
-			return nil, err
-		}
+        _, err := file.Seek(endCandidate, 0)
+        if err != nil {
+            return nil, err
+        }
 
-		buffer := make([]byte, 1)
-		extraBytes := int64(0)
-		for {
-			_, err := file.Read(buffer)
-			if err != nil {
-				break
-			}
-			extraBytes++
-			if buffer[0] == '\n' {
-				break
-			}
-		}
+        buffer := make([]byte, 1)
+        extraBytes := int64(0)
+        for {
+            _, err := file.Read(buffer)
+            if err != nil {
+                break
+            }
+            extraBytes++
+            if buffer[0] == '\n' {
+                break
+            }
+        }
 
-		actualEnd := endCandidate + extraBytes
-		segments = append(segments, Segment{start: start, size: actualEnd - start})
-		currentPos = actualEnd
-	}
+        actualEnd := endCandidate + extraBytes
+        segments = append(segments, Segment{start: start, size: actualEnd - start})
+        currentPos = actualEnd
+    }
 
-	return segments, nil
+    return segments, nil
+}
+
+type ChannelResult struct {
+    segIdx int
+    points []Point
 }
 
 func LoadPoints(path string) ([]Point, error) {
-	segments, err := Segments(path)
-	if err != nil {
-		return nil, err
-	}
-	resultsChan := make(chan []Point, len(segments))
-	var wg sync.WaitGroup
+    segments, err := Segments(path)
+    if err != nil {
+        return nil, err
+    }
 
-	for i, segment := range segments {
-		wg.Add(1)
-		go func(segIdx int, segment Segment) {
-			defer wg.Done()
-			file, err := os.Open(path)
-			if err != nil {
-				return
-			}
-			defer file.Close()
+    file, err := os.Open(path)
+    if err != nil {
+        return nil, err
+    }
+    defer file.Close()
 
-			_, err = file.Seek(segment.start, 0)
-			if err != nil {
-				return
-			}
+    info, err := file.Stat()
+    if err != nil {
+        return nil, err
+    }
+    totalSize := info.Size()
 
-			limitReader := io.LimitReader(file, segment.size)
-			scanner := bufio.NewScanner(limitReader)
+    data, err := syscall.Mmap(int(file.Fd()), 0, int(totalSize), syscall.PROT_READ, syscall.MAP_SHARED)
+    if err != nil {
+        return nil, err
+    }
+    defer syscall.Munmap(data)
 
-			localPoints := make([]Point, 0, 1024)
+    numSegments := len(segments)
+    resultsChan := make(chan ChannelResult, numSegments)
+    var wg sync.WaitGroup
 
-			if segIdx == 0 {
-				if scanner.Scan() {
-				}
-			}
+    for i, segment := range segments {
+        wg.Add(1)
+        go func(segIdx int, segment Segment) {
+            defer wg.Done()
 
-			for scanner.Scan() {
-				line := bytes.TrimSpace(scanner.Bytes())
-				if len(line) == 0 {
-					continue
-				}
+            workerData := data[segment.start : segment.start+segment.size]
+            reader := bytes.NewReader(workerData)
+            scanner := bufio.NewScanner(reader)
 
-				p, err := processLine(line)
-				if err != nil {
-					continue
-				}
-				if p != nil {
-					localPoints = append(localPoints, *p)
-				}
+            var localPoints []Point
 
-				if len(localPoints) == cap(localPoints) {
-					resultsChan <- localPoints
-					localPoints = make([]Point, 0, 1024)
-				}
-			}
-			if len(localPoints) > 0 {
-				resultsChan <- localPoints
-			}
-		}(i, segment)
-	}
+            if segIdx == 0 {
+                if scanner.Scan() {
+                }
+            }
 
-	go func() {
-		wg.Wait()
-		close(resultsChan)
-	}()
+            for scanner.Scan() {
+                line := bytes.TrimSpace(scanner.Bytes())
+                if len(line) == 0 {
+                    continue
+                }
 
-	var allPoints []Point
-	for batch := range resultsChan {
-		allPoints = append(allPoints, batch...)
-	}
+                p, err := processLine(line)
+                if err != nil {
+                    continue
+                }
+                if p != nil {
+                    localPoints = append(localPoints, *p)
+                }
+            }
+            
+            if len(localPoints) > 0 {
+                resultsChan <- ChannelResult{segIdx: segIdx, points: localPoints}
+            }
+        }(i, segment)
+    }
 
-	return allPoints, nil
+    go func() {
+        wg.Wait()
+        close(resultsChan)
+    }()
+
+    orderedBatches := make([][]Point, numSegments)
+    totalPoints := 0
+
+    for res := range resultsChan {
+        orderedBatches[res.segIdx] = res.points
+        totalPoints += len(res.points)
+    }
+
+    allPoints := make([]Point, 0, totalPoints)
+    for i := 0; i < numSegments; i++ {
+        if orderedBatches[i] != nil {
+            allPoints = append(allPoints, orderedBatches[i]...)
+        }
+    }
+
+    return allPoints, nil
 }
 
 func processLine(line []byte) (*Point, error) {
-	parts := bytes.Split(line, []byte(","))
-	coords := make([]float64, len(parts))
+    parts := bytes.Split(line, []byte(","))
+    coords := make([]float64, len(parts))
 
-	for i, part := range parts {
-		val, err := strconv.ParseFloat(string(bytes.TrimSpace(part)), 64)
-		if err != nil {
-			return nil, err
-		}
-		coords[i] = val
-	}
+    for i, part := range parts {
+        val, err := strconv.ParseFloat(string(bytes.TrimSpace(part)), 64)
+        if err != nil {
+            return nil, err
+        }
+        coords[i] = val
+    }
 
-	point, err := NewPoint(coords)
-	if err != nil {
-		return nil, err
-	}
+    point, err := NewPoint(coords)
+    if err != nil {
+        return nil, err
+    }
 
-	return point, nil
+    return point, nil
 }
