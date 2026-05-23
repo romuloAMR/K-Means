@@ -84,7 +84,10 @@ public class Kmeans {
         }
 
         for (Thread t : threads) {
-            while (t.isAlive()){}
+            if (t == null) continue;
+            while (t.isAlive()){
+                Thread.yield();
+            }
         }
 
         for (int c = 0; c < numClusters; c++) {
@@ -125,7 +128,10 @@ public class Kmeans {
         }
 
         for (Thread t : threads) {
-            while (t.isAlive()){}
+            if (t == null) continue;
+            while (t.isAlive()){
+                Thread.yield();
+            }
         }
     }
 

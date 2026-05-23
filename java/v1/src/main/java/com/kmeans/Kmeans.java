@@ -18,6 +18,7 @@ public class Kmeans {
         this.points = points;
         this.numClusters = numClusters;
         this.createClusters();
+        this.randCentroids();
     }
 
     private void createClusters() {
@@ -89,7 +90,6 @@ public class Kmeans {
     }
 
     public void fit(int maxIterations) {
-        this.randCentroids();
         List<Point> lastCentroids;
         int iteration = 0;
         boolean converged = false;
