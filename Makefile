@@ -1,7 +1,7 @@
 GO_DIR = go
 JAVA_DIR = java
 DATA_DIR = data
-BENCH_FLAGS_GO = -run=^$$ -bench=^Benchmark[a-zA-Z] -benchmem -count=6
+BENCH_FLAGS_GO = -run=^$$ -bench=^Benchmark -benchmem -count=6
 THREADS ?= 4
 EXECS ?= 20
 GO_VERSIONS   = v1 v2 v3 v4 v6 v7 v10
@@ -73,7 +73,7 @@ microbenchmark-go-v1:
 
 heisenbug-check-go-v1:
 	@echo "Check Heisenbugs Go V1..."
-	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v1/...  | tee v1/concurrency_v1.txt
+	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^$$ -bench=^Benchmark ./v1/... | tee v1/concurrency_v1.txt
 
 profile-go-v1:  clean-profile
 	@echo "Opening profiles of CPU, Heap and Trace V1..."
@@ -99,7 +99,7 @@ microbenchmark-go-v2:
 
 heisenbug-check-go-v2:
 	@echo "Check Heisenbugs Go V2..."
-	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v2/...  | tee v2/concurrency_v2.txt
+	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^$$ -bench=^Benchmark ./v2/... | tee v2/concurrency_v2.txt
 
 profile-go-v2:  clean-profile
 	@echo "Opening profiles of CPU, Heap and Trace V2..."
@@ -125,7 +125,7 @@ microbenchmark-go-v3:
 
 heisenbug-check-go-v3:
 	@echo "Check Heisenbugs Go V3..."
-	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v3/...  | tee v3/concurrency_v3.txt
+	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^$$ -bench=^Benchmark ./v3/... | tee v3/concurrency_v3.txt
 
 profile-go-v3:  clean-profile
 	@echo "Opening profiles of CPU, Heap and Trace V3..."
@@ -151,7 +151,7 @@ microbenchmark-go-v4:
 
 heisenbug-check-go-v4:
 	@echo "Check Heisenbugs Go V4..."
-	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v4/...  | tee v4/concurrency_v4.txt
+	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^$$ -bench=^Benchmark ./v4/... | tee v4/concurrency_v4.txt
 
 profile-go-v4:  clean-profile
 	@echo "Opening profiles of CPU, Heap and Trace V4..."
@@ -177,7 +177,7 @@ microbenchmark-go-v6:
 
 heisenbug-check-go-v6:
 	@echo "Check Heisenbugs Go V6..."
-	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v6/...  | tee v6/concurrency_v6.txt
+	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^$$ -bench=^Benchmark ./v6/... | tee v6/concurrency_v6.txt
 
 profile-go-v6:  clean-profile
 	@echo "Opening profiles of CPU, Heap and Trace V6..."
@@ -203,7 +203,7 @@ microbenchmark-go-v7:
 
 heisenbug-check-go-v7:
 	@echo "Check Heisenbugs Go V7..."
-	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v7/...  | tee v7/concurrency_v7.txt
+	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^$$ -bench=^Benchmark ./v7/... | tee v7/concurrency_v7.txt
 
 profile-go-v7:  clean-profile
 	@echo "Opening profiles of CPU, Heap and Trace V7..."
@@ -229,7 +229,7 @@ microbenchmark-go-v10:
 
 heisenbug-check-go-v10:
 	@echo "Check Heisenbugs Go V10..."
-	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v10/...  | tee v10/concurrency_v10.txt
+	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^$$ -bench=^Benchmark ./v10/... | tee v10/concurrency_v10.txt
 
 profile-go-v10:  clean-profile
 	@echo "Opening profiles of CPU, Heap and Trace V10..."
