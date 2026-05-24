@@ -23,16 +23,16 @@ Implementation and optimisation of the K-Means algorithm in Java and Go language
 
 | Status             | Name                                             | Code               | Microbenchmark     | Macrobenchmark     | Heisenbugs Test    | Profile            |
 | :---:              | :---                                             | :---:              | :---:              | :---:              | :---:              | :---:              |
-| :construction:     | [Java v1](./java/v1/src/main/java/com/kmeans/)   | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :white_check_mark: |
-| :construction:     | [Java v2](./java/v2/src/main/java/com/kmeans/)   | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :white_check_mark: |
-| :construction:     | [Java v3](./java/v3/src/main/java/com/kmeans/)   | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :white_check_mark: |
-| :construction:     | [Java v4](./java/v4/src/main/java/com/kmeans/)   | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :white_check_mark: |
-| :construction:     | [Java v5](./java/v5/src/main/java/com/kmeans/)   | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :white_check_mark: |
-| :construction:     | [Java v6](./java/v6/src/main/java/com/kmeans/)   | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :white_check_mark: |
-| :construction:     | [Java v7](./java/v7/src/main/java/com/kmeans/)   | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :white_check_mark: |
-| :construction:     | [Java v8](./java/v8/src/main/java/com/kmeans/)   | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :white_check_mark: |
-| :construction:     | [Java v9](./java/v9/src/main/java/com/kmeans/)   | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :white_check_mark: |
-| :construction:     | [Java v10](./java/v10/src/main/java/com/kmeans/) | :white_check_mark: | :white_check_mark: | :x:                | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Java v1](./java/v1/src/main/java/com/kmeans/)   | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Java v2](./java/v2/src/main/java/com/kmeans/)   | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Java v3](./java/v3/src/main/java/com/kmeans/)   | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Java v4](./java/v4/src/main/java/com/kmeans/)   | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Java v5](./java/v5/src/main/java/com/kmeans/)   | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Java v6](./java/v6/src/main/java/com/kmeans/)   | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Java v7](./java/v7/src/main/java/com/kmeans/)   | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Java v8](./java/v8/src/main/java/com/kmeans/)   | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Java v9](./java/v9/src/main/java/com/kmeans/)   | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Java v10](./java/v10/src/main/java/com/kmeans/) | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Go v1](./go/v1/)                                | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Go v2](./go/v2/)                                | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Go v3](./go/v3/)                                | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
