@@ -30,7 +30,7 @@ public class Kmeans {
 
     private void randCentroids() {
         this.centroids = new ArrayList<>();
-        int[] indices = {10, 532, 9012};
+        int[] indices = {0, 1, 2};
         for (int i = 0; i < this.numClusters; i++) {
             this.centroids.add(new Point(this.points.get(indices[i])));;
         }

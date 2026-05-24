@@ -27,7 +27,7 @@ public class Kmeans {
         this.assignments = new int[this.numPoints];
         this.centroids = new Point[this.numClusters];
         
-        int[] indices = {10, 532, 9012};
+        int[] indices = {0, 1, 2};
         for (int i = 0; i < this.numClusters; i++) {
             this.centroids[i] = new Point(this.points[indices[i]]);
         }

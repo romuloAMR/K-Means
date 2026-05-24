@@ -25,7 +25,7 @@ func Kmeans(numClusters int, points []Point, seed uint64) (*kmeans, error) {
 		centroids: make([]Point, numClusters),
 	}
 
-	indices := []int{10, 532, 9012}
+	indices := []int{0, 1, 2}
 	instance.initCentroids(indices)
 
 	return instance, nil
