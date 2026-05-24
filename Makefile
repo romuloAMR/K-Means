@@ -4,15 +4,17 @@ DATA_DIR = data
 BENCH_FLAGS_GO = -run=^$$ -bench=^Benchmark[a-zA-Z] -benchmem -count=6
 THREADS ?= 4
 EXECS ?= 20
+GO_VERSIONS   = v1 v2 v3 v4 v6 v7 v10
+JAVA_VERSIONS = v1 v2 v3 v4 v5 v6 v7 v8 v9 v10
 
 .PHONY: all help create-data \
         run-go-v1    microbenchmark-go-v1    heisenbug-check-go-v1    profile-go-v1    saturation-go-v1\
         run-go-v2    microbenchmark-go-v2    heisenbug-check-go-v2    profile-go-v2    saturation-go-v2\
         run-go-v3    microbenchmark-go-v3    heisenbug-check-go-v3    profile-go-v3    saturation-go-v3\
         run-go-v4    microbenchmark-go-v4    heisenbug-check-go-v4    profile-go-v4    saturation-go-v4\
-		run-go-v6    microbenchmark-go-v6    heisenbug-check-go-v6    profile-go-v6    saturation-go-v6\
-		run-go-v7    microbenchmark-go-v7    heisenbug-check-go-v7    profile-go-v7    saturation-go-v7\
-		run-go-v10   microbenchmark-go-v10   heisenbug-check-go-v10   profile-go-v10   saturation-go-v10\
+        run-go-v6    microbenchmark-go-v6    heisenbug-check-go-v6    profile-go-v6    saturation-go-v6\
+        run-go-v7    microbenchmark-go-v7    heisenbug-check-go-v7    profile-go-v7    saturation-go-v7\
+        run-go-v10   microbenchmark-go-v10   heisenbug-check-go-v10   profile-go-v10   saturation-go-v10\
         run-java-v1  microbenchmark-java-v1  heisenbug-check-java-v1  profile-java-v1  \
         run-java-v2  microbenchmark-java-v2  heisenbug-check-java-v2  profile-java-v2  \
         run-java-v3  microbenchmark-java-v3  heisenbug-check-java-v3  profile-java-v3  \
@@ -22,7 +24,9 @@ EXECS ?= 20
         run-java-v7  microbenchmark-java-v7  heisenbug-check-java-v7  profile-java-v7  \
         run-java-v8  microbenchmark-java-v8  heisenbug-check-java-v8  profile-java-v8  \
         run-java-v9  microbenchmark-java-v9  heisenbug-check-java-v9  profile-java-v9  \
-        run-java-v10 microbenchmark-java-v10 heisenbug-check-java-v10 profile-java-v10
+        run-java-v10 microbenchmark-java-v10 heisenbug-check-java-v10 profile-java-v10 \
+		benchmark-all-go benchmark-all-java benchmark-all \
+		heisenbug-all-go heisenbug-all-java heisenbug-all
 
 all: help
 
@@ -39,6 +43,12 @@ help:
 	@echo "  make microbenchmark-java-vX    - Microbenchmark of VX in Java"
 	@echo "  make heisenbug-check-java-vX   - Check heisenbug of VX in Java"
 	@echo "  make profile-java-vX           - Profile of VX in Java"
+	@echo "  make benchmark-all             - All Benchmark in Java and Go"
+	@echo "  make benchmark-all-java        - All Benchmark in Java"
+	@echo "  make benchmark-all-go          - All Benchmark in Go"
+	@echo "  make heisenbug-all             - All Heisenbug check in Java and Go"
+	@echo "  make heisenbug-all-java        - All Heisenbug check in Java"
+	@echo "  make heisenbug-all-go          - All Heisenbug check in Go"
 
 # 1. Python
 create-data:
@@ -46,11 +56,11 @@ create-data:
 	cd $(DATA_DIR) && python3 main.py
 
 # 2. GO
-## V1
 clean-profile:
 	-@pkill -f "go tool pprof"
 	-@pkill -f "go tool trace"
 
+## V1
 run-go-v1:
 	@echo "Run Go V1..."
 	cd $(GO_DIR) && go run ./v1/
@@ -58,12 +68,12 @@ run-go-v1:
 microbenchmark-go-v1:
 	@echo "Microbenchmark Go V1..."
 	cd $(GO_DIR) && \
-	go test $(BENCH_FLAGS_GO) ./v1/ > results_v1.txt && \
-	benchstat results_v1.txt
+	go test $(BENCH_FLAGS_GO) ./v1/ | tee v1/results_v1.txt && \
+	benchstat v1/results_v1.txt
 
 heisenbug-check-go-v1:
 	@echo "Check Heisenbugs Go V1..."
-	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v1/...
+	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v1/...  | tee v1/concurrency_v1.txt
 
 profile-go-v1:  clean-profile
 	@echo "Opening profiles of CPU, Heap and Trace V1..."
@@ -84,12 +94,12 @@ run-go-v2:
 microbenchmark-go-v2:
 	@echo "Microbenchmark Go V2..."
 	cd $(GO_DIR) && \
-	go test $(BENCH_FLAGS_GO) ./v2/ > results_v2.txt && \
-	benchstat results_v2.txt
+	go test $(BENCH_FLAGS_GO) ./v2/ | tee v2/results_v2.txt && \
+	benchstat v2/results_v2.txt
 
 heisenbug-check-go-v2:
 	@echo "Check Heisenbugs Go V2..."
-	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v2/...
+	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v2/...  | tee v2/concurrency_v2.txt
 
 profile-go-v2:  clean-profile
 	@echo "Opening profiles of CPU, Heap and Trace V2..."
@@ -110,12 +120,12 @@ run-go-v3:
 microbenchmark-go-v3:
 	@echo "Microbenchmark Go V3..."
 	cd $(GO_DIR) && \
-	go test $(BENCH_FLAGS_GO) ./v3/ > results_v3.txt && \
-	benchstat results_v3.txt
+	go test $(BENCH_FLAGS_GO) ./v3/ | tee v3/results_v3.txt && \
+	benchstat v3/results_v3.txt
 
 heisenbug-check-go-v3:
 	@echo "Check Heisenbugs Go V3..."
-	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v3/...
+	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v3/...  | tee v3/concurrency_v3.txt
 
 profile-go-v3:  clean-profile
 	@echo "Opening profiles of CPU, Heap and Trace V3..."
@@ -127,6 +137,7 @@ saturation-go-v3:
 	@echo "Running Macro Saturation Test Go V3 (THREADS=$(THREADS), EXECS=$(EXECS))..."
 	cd $(GO_DIR) && \
 	go test -v -tags saturation -run=^TestMacroBenchmarkSaturation$$ ./v3/ -args -threads=$(THREADS) -execs=$(EXECS)
+
 ## V4
 run-go-v4:
 	@echo "Run Go V4..."
@@ -135,12 +146,12 @@ run-go-v4:
 microbenchmark-go-v4:
 	@echo "Microbenchmark Go V4..."
 	cd $(GO_DIR) && \
-	go test $(BENCH_FLAGS_GO) ./v4/ > results_v4.txt && \
-	benchstat results_v4.txt
+	go test $(BENCH_FLAGS_GO) ./v4/ | tee v4/results_v4.txt && \
+	benchstat v4/results_v4.txt
 
 heisenbug-check-go-v4:
 	@echo "Check Heisenbugs Go V4..."
-	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v4/...
+	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v4/...  | tee v4/concurrency_v4.txt
 
 profile-go-v4:  clean-profile
 	@echo "Opening profiles of CPU, Heap and Trace V4..."
@@ -152,6 +163,7 @@ saturation-go-v4:
 	@echo "Running Macro Saturation Test Go V4 (THREADS=$(THREADS), EXECS=$(EXECS))..."
 	cd $(GO_DIR) && \
 	go test -v -tags saturation -run=^TestMacroBenchmarkSaturation$$ ./v4/ -args -threads=$(THREADS) -execs=$(EXECS)
+
 ## V6
 run-go-v6:
 	@echo "Run Go V6..."
@@ -160,12 +172,12 @@ run-go-v6:
 microbenchmark-go-v6:
 	@echo "Microbenchmark Go V6..."
 	cd $(GO_DIR) && \
-	go test $(BENCH_FLAGS_GO) ./v6/ > results_v6.txt && \
-	benchstat results_v6.txt
+	go test $(BENCH_FLAGS_GO) ./v6/ | tee v6/results_v6.txt && \
+	benchstat v6/results_v6.txt
 
 heisenbug-check-go-v6:
 	@echo "Check Heisenbugs Go V6..."
-	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v6/...
+	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v6/...  | tee v6/concurrency_v6.txt
 
 profile-go-v6:  clean-profile
 	@echo "Opening profiles of CPU, Heap and Trace V6..."
@@ -177,6 +189,7 @@ saturation-go-v6:
 	@echo "Running Macro Saturation Test Go V6 (THREADS=$(THREADS), EXECS=$(EXECS))..."
 	cd $(GO_DIR) && \
 	go test -v -tags saturation -run=^TestMacroBenchmarkSaturation$$ ./v6/ -args -threads=$(THREADS) -execs=$(EXECS)
+
 ## V7
 run-go-v7:
 	@echo "Run Go V7..."
@@ -185,12 +198,12 @@ run-go-v7:
 microbenchmark-go-v7:
 	@echo "Microbenchmark Go V7..."
 	cd $(GO_DIR) && \
-	go test $(BENCH_FLAGS_GO) ./v7/ > results_v7.txt && \
-	benchstat results_v7.txt
+	go test $(BENCH_FLAGS_GO) ./v7/ | tee v7/results_v7.txt && \
+	benchstat v7/results_v7.txt
 
 heisenbug-check-go-v7:
 	@echo "Check Heisenbugs Go V7..."
-	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v7/...
+	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v7/...  | tee v7/concurrency_v7.txt
 
 profile-go-v7:  clean-profile
 	@echo "Opening profiles of CPU, Heap and Trace V7..."
@@ -202,6 +215,7 @@ saturation-go-v7:
 	@echo "Running Macro Saturation Test Go V7 (THREADS=$(THREADS), EXECS=$(EXECS))..."
 	cd $(GO_DIR) && \
 	go test -v -tags saturation -run=^TestMacroBenchmarkSaturation$$ ./v7/ -args -threads=$(THREADS) -execs=$(EXECS)
+
 ## V10
 run-go-v10:
 	@echo "Run Go V10..."
@@ -210,12 +224,12 @@ run-go-v10:
 microbenchmark-go-v10:
 	@echo "Microbenchmark Go V10..."
 	cd $(GO_DIR) && \
-	go test $(BENCH_FLAGS_GO) ./v10/ > results_v10.txt && \
-	benchstat results_v10.txt
+	go test $(BENCH_FLAGS_GO) ./v10/ | tee v10/results_v10.txt && \
+	benchstat v10/results_v10.txt
 
 heisenbug-check-go-v10:
 	@echo "Check Heisenbugs Go V10..."
-	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v10/...
+	cd $(GO_DIR) && go test -race -cpu=2,4,8 -count=10 -run=^Test ./v10/...  | tee v10/concurrency_v10.txt
 
 profile-go-v10:  clean-profile
 	@echo "Opening profiles of CPU, Heap and Trace V10..."
@@ -228,6 +242,7 @@ saturation-go-v10:
 	cd $(GO_DIR) && \
 	go test -v -tags saturation -run=^TestMacroBenchmarkSaturation$$ ./v10/ -args -threads=$(THREADS) -execs=$(EXECS)
 
+
 # 3. JAVA
 ## V1
 run-java-v1:
@@ -236,8 +251,8 @@ run-java-v1:
 
 microbenchmark-java-v1:
 	@echo "Microbenchmark Java V1..."
-	cd $(JAVA_DIR) && mvn clean package -pl v1
-	java -jar $(JAVA_DIR)/v1/target/benchmarks.jar | tee java/v1/resultados_v1.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v1 && \
+	java -jar v1/target/benchmarks.jar | tee v1/results_v1.txt
 
 profile-java-v1:
 	@echo "Profile Java V1..."
@@ -245,7 +260,7 @@ profile-java-v1:
 
 heisenbug-check-java-v1:
 	@echo "Concurrency Test Java V1..."
-	@echo "It's OK!" > java/v1/resultados_v1.txt
+	cd $(JAVA_DIR) && echo "It's OK!" > v1/concurrency_v1.txt
 
 ## V2
 run-java-v2:
@@ -254,8 +269,8 @@ run-java-v2:
 
 microbenchmark-java-v2:
 	@echo "Microbenchmark Java V2..."
-	cd $(JAVA_DIR) && mvn clean package -pl v2
-	java -jar $(JAVA_DIR)/v2/target/benchmarks.jar | tee java/v2/resultados_v2.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v2 && \
+	java -jar v2/target/benchmarks.jar | tee v2/results_v2.txt
 
 profile-java-v2:
 	@echo "Profile Java V2..."
@@ -263,8 +278,8 @@ profile-java-v2:
 
 heisenbug-check-java-v2:
 	@echo "Concurrency Test Java V2..."
-	cd $(JAVA_DIR) && mvn clean package -pl v2 -Pjcstress
-	java -jar $(JAVA_DIR)/v2/target/jcstress-tests.jar -m quick | tee java/v2/concorrencia_v2.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v2 -Pjcstress && \
+	java -jar v2/target/jcstress-tests.jar -m quick | tee v2/concurrency_v2.txt && \
 	rm -r *.bin.gz
 
 ## V3
@@ -274,8 +289,8 @@ run-java-v3:
 
 microbenchmark-java-v3:
 	@echo "Microbenchmark Java V3..."
-	cd $(JAVA_DIR) && mvn clean package -pl v3
-	java -jar $(JAVA_DIR)/v3/target/benchmarks.jar | tee java/v3/resultados_v3.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v3 && \
+	java -jar v3/target/benchmarks.jar | tee v3/results_v3.txt
 
 profile-java-v3:
 	@echo "Profile Java V3..."
@@ -283,8 +298,8 @@ profile-java-v3:
 
 heisenbug-check-java-v3:
 	@echo "Concurrency Test Java V3..."
-	cd $(JAVA_DIR) && mvn clean package -pl v3 -Pjcstress
-	java -jar $(JAVA_DIR)/v3/target/jcstress-tests.jar -m quick | tee java/v3/concorrencia_v3.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v3 -Pjcstress && \
+	java -jar v3/target/jcstress-tests.jar -m quick | tee v3/concurrency_v3.txt && \
 	rm -r *.bin.gz
 
 ## V4
@@ -294,8 +309,8 @@ run-java-v4:
 
 microbenchmark-java-v4:
 	@echo "Microbenchmark Java V4..."
-	cd $(JAVA_DIR) && mvn clean package -pl v4
-	java -jar $(JAVA_DIR)/v4/target/benchmarks.jar | tee java/v4/resultados_v4.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v4 && \
+	java -jar v4/target/benchmarks.jar | tee v4/results_v4.txt
 
 profile-java-v4:
 	@echo "Profile Java V4..."
@@ -303,8 +318,8 @@ profile-java-v4:
 
 heisenbug-check-java-v4:
 	@echo "Concurrency Test Java V4..."
-	cd $(JAVA_DIR) && mvn clean package -pl v4 -Pjcstress
-	java -jar $(JAVA_DIR)/v4/target/jcstress-tests.jar -m quick | tee java/v4/concorrencia_v4.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v4 -Pjcstress && \
+	java -jar v4/target/jcstress-tests.jar -m quick | tee v4/concurrency_v4.txt && \
 	rm -r *.bin.gz
 
 ## V5
@@ -314,8 +329,8 @@ run-java-v5:
 
 microbenchmark-java-v5:
 	@echo "Microbenchmark Java V5..."
-	cd $(JAVA_DIR) && mvn clean package -pl v5
-	java -jar $(JAVA_DIR)/v5/target/benchmarks.jar | tee java/v5/resultados_v5.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v5 && \
+	java -jar v5/target/benchmarks.jar | tee v5/results_v5.txt
 
 profile-java-v5:
 	@echo "Profile Java V5..."
@@ -323,8 +338,8 @@ profile-java-v5:
 
 heisenbug-check-java-v5:
 	@echo "Concurrency Test Java V5..."
-	cd $(JAVA_DIR) && mvn clean package -pl v5 -Pjcstress
-	java -jar $(JAVA_DIR)/v5/target/jcstress-tests.jar -m quick | tee java/v5/concorrencia_v5.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v5 -Pjcstress && \
+	java -jar v5/target/jcstress-tests.jar -m quick | tee v5/concurrency_v5.txt && \
 	rm -r *.bin.gz
 
 ## V6
@@ -334,8 +349,8 @@ run-java-v6:
 
 microbenchmark-java-v6:
 	@echo "Microbenchmark Java V6..."
-	cd $(JAVA_DIR) && mvn clean package -pl v6
-	java -jar $(JAVA_DIR)/v6/target/benchmarks.jar | tee java/v6/resultados_v6.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v6 && \
+	java -jar v6/target/benchmarks.jar | tee v6/results_v6.txt
 
 profile-java-v6:
 	@echo "Profile Java V6..."
@@ -343,8 +358,8 @@ profile-java-v6:
 
 heisenbug-check-java-v6:
 	@echo "Concurrency Test Java V6..."
-	cd $(JAVA_DIR) && mvn clean package -pl v6 -Pjcstress
-	java -jar $(JAVA_DIR)/v6/target/jcstress-tests.jar -m quick | tee java/v6/concorrencia_v6.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v6 -Pjcstress && \
+	java -jar v6/target/jcstress-tests.jar -m quick | tee v6/concurrency_v6.txt && \
 	rm -r *.bin.gz
 
 ## V7
@@ -354,8 +369,8 @@ run-java-v7:
 
 microbenchmark-java-v7:
 	@echo "Microbenchmark Java V7..."
-	cd $(JAVA_DIR) && mvn clean package -pl v7
-	java -jar $(JAVA_DIR)/v7/target/benchmarks.jar | tee java/v7/resultados_v7.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v7 && \
+	java -jar v7/target/benchmarks.jar | tee v7/results_v7.txt
 
 profile-java-v7:
 	@echo "Profile Java V7..."
@@ -363,8 +378,8 @@ profile-java-v7:
 
 heisenbug-check-java-v7:
 	@echo "Concurrency Test Java V7..."
-	cd $(JAVA_DIR) && mvn clean package -pl v7 -Pjcstress
-	java -jar $(JAVA_DIR)/v7/target/jcstress-tests.jar -m quick | tee java/v7/concorrencia_v7.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v7 -Pjcstress && \
+	java -jar v7/target/jcstress-tests.jar -m quick | tee v7/concurrency_v7.txt && \
 	rm -r *.bin.gz
 
 ## V8
@@ -374,8 +389,8 @@ run-java-v8:
 
 microbenchmark-java-v8:
 	@echo "Microbenchmark Java V8..."
-	cd $(JAVA_DIR) && mvn clean package -pl v8
-	java -jar $(JAVA_DIR)/v8/target/benchmarks.jar | tee java/v8/resultados_v8.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v8 && \
+	java -jar v8/target/benchmarks.jar | tee v8/results_v8.txt
 
 profile-java-v8:
 	@echo "Profile Java V8..."
@@ -383,8 +398,8 @@ profile-java-v8:
 
 heisenbug-check-java-v8:
 	@echo "Concurrency Test Java V8..."
-	cd $(JAVA_DIR) && mvn clean package -pl v8 -Pjcstress
-	java -jar $(JAVA_DIR)/v8/target/jcstress-tests.jar -m quick | tee java/v8/concorrencia_v8.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v8 -Pjcstress && \
+	java -jar v8/target/jcstress-tests.jar -m quick | tee v8/concurrency_v8.txt && \
 	rm -r *.bin.gz
 
 ## V9
@@ -394,8 +409,8 @@ run-java-v9:
 
 microbenchmark-java-v9:
 	@echo "Microbenchmark Java V9..."
-	cd $(JAVA_DIR) && mvn clean package -pl v9
-	java -jar $(JAVA_DIR)/v9/target/benchmarks.jar | tee java/v9/resultados_v9.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v9 && \
+	java -jar v9/target/benchmarks.jar | tee v9/results_v9.txt
 
 profile-java-v9:
 	@echo "Profile Java V9..."
@@ -403,8 +418,8 @@ profile-java-v9:
 
 heisenbug-check-java-v9:
 	@echo "Concurrency Test Java V9..."
-	cd $(JAVA_DIR) && mvn clean package -pl v9 -Pjcstress
-	java -jar $(JAVA_DIR)/v9/target/jcstress-tests.jar -m quick | tee java/v9/concorrencia_v9.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v9 -Pjcstress && \
+	java -jar v9/target/jcstress-tests.jar -m quick | tee v9/concurrency_v9.txt && \
 	rm -r *.bin.gz
 
 ## V10
@@ -414,8 +429,8 @@ run-java-v10:
 
 microbenchmark-java-v10:
 	@echo "Microbenchmark Java V10..."
-	cd $(JAVA_DIR) && mvn clean package -pl v10
-	java -jar $(JAVA_DIR)/v10/target/benchmarks.jar | tee java/v10/resultados_v10.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v10 && \
+	java -jar v10/target/benchmarks.jar | tee v10/results_v10.txt
 
 profile-java-v10:
 	@echo "Profile Java V10..."
@@ -423,6 +438,49 @@ profile-java-v10:
 
 heisenbug-check-java-v10:
 	@echo "Concurrency Test Java V10..."
-	cd $(JAVA_DIR) && mvn clean package -pl v10 -Pjcstress
-	java -jar $(JAVA_DIR)/v10/target/jcstress-tests.jar -m quick | tee java/v10/concorrencia_v10.txt
+	cd $(JAVA_DIR) && mvn clean package -pl v10 -Pjcstress && \
+	java -jar v10/target/jcstress-tests.jar -m quick | tee v10/concurrency_v10.txt && \
 	rm -r *.bin.gz
+
+# Link
+benchmark-all-go:
+	@echo "Starting all Go microbenchmarks with 10s intervals..."
+	@for v in $(GO_VERSIONS); do \
+		echo "--------------------------------------------------"; \
+		$(MAKE) microbenchmark-go-$$v; \
+		echo "Waiting 10 seconds for system cooldown..."; \
+		sleep 10; \
+	done
+
+benchmark-all-java:
+	@echo "Starting all Java microbenchmarks with 10s intervals..."
+	@for v in $(JAVA_VERSIONS); do \
+		echo "--------------------------------------------------"; \
+		$(MAKE) microbenchmark-java-$$v; \
+		echo "Waiting 10 seconds for system cooldown..."; \
+		sleep 10; \
+	done
+
+benchmark-all: benchmark-all-java benchmark-all-go
+	@echo "All microbenchmarks (Go and Java) have been completed!"
+
+heisenbug-all-go:
+	@echo "Starting all Go heisenbug checks with 10s intervals..."
+	@for v in $(GO_VERSIONS); do \
+		echo "--------------------------------------------------"; \
+		$(MAKE) heisenbug-check-go-$$v; \
+		echo "Waiting 10 seconds for system cooldown..."; \
+		sleep 10; \
+	done
+
+heisenbug-all-java:
+	@echo "Starting all Java heisenbug checks with 10s intervals..."
+	@for v in $(JAVA_VERSIONS); do \
+		echo "--------------------------------------------------"; \
+		$(MAKE) heisenbug-check-java-$$v; \
+		echo "Waiting 10 seconds for system cooldown..."; \
+		sleep 10; \
+	done
+
+heisenbug-all: heisenbug-all-go heisenbug-all-java
+	@echo "All heisenbug checks (Go and Java) have been completed!"
