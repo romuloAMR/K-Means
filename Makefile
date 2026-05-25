@@ -67,17 +67,12 @@ clean-profile:
 	-@pkill -f "go tool trace"
 
 define run_progression_go
-	@cd $(GO_DIR) && go test -c -tags saturation ./$(1)/ -o ./$(1)/saturation.test > /dev/null 2>&1
-	@echo "Threads,Time_MS" | tee $(GO_DIR)/$(1)/progression_$(1).txt
+	@rm -f $(GO_DIR)/$(1)/progression_$(1).txt
 	@for t in $$(seq 1 $(MAX_THREADS)); do \
-		START_TIME=$$(python3 -c 'import time; print(int(time.time() * 1000))'); \
-		cd $(GO_DIR) && ./$(1)/saturation.test -test.v -test.run=^TestMacroBenchmarkSaturation$$ -threads=$$t -execs=$$t > /dev/null 2>&1; \
-		END_TIME=$$(python3 -c 'import time; print(int(time.time() * 1000))'); \
-		ELAPSED=$$((END_TIME - START_TIME)); \
-		echo "$$t,$$ELAPSED" | tee -a $(GO_DIR)/$(1)/progression_$(1).txt; \
+		echo "--------------------------------------------------"; \
+		(cd $(GO_DIR) && go test -tags saturation -v ./$(1)/ -run=^TestMacroBenchmarkSaturation$$ -args -threads=$$t -execs=$$t) | tee -a $(GO_DIR)/$(1)/progression_$(1).txt; \
 		sleep 2; \
 	done
-	@rm -f $(GO_DIR)/$(1)/saturation.test
 endef
 
 ## V1
