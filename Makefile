@@ -5,31 +5,32 @@ JMETER_EXE = jmeter
 BENCH_FLAGS_GO = -run=^$$ -bench=^Benchmark -benchmem -count=6
 THREADS ?= 4
 EXECS ?= 20
+MAX_THREADS ?= 8
 GO_VERSIONS   = v1 v2 v3 v4 v6 v7 v10
 JAVA_VERSIONS = v1 v2 v3 v4 v5 v6 v7 v8 v9 v10
 
 .PHONY: all help create-data \
-        run-go-v1    microbenchmark-go-v1    heisenbug-check-go-v1    profile-go-v1    saturation-go-v1     \
-        run-go-v2    microbenchmark-go-v2    heisenbug-check-go-v2    profile-go-v2    saturation-go-v2     \
-        run-go-v3    microbenchmark-go-v3    heisenbug-check-go-v3    profile-go-v3    saturation-go-v3     \
-        run-go-v4    microbenchmark-go-v4    heisenbug-check-go-v4    profile-go-v4    saturation-go-v4     \
-        run-go-v6    microbenchmark-go-v6    heisenbug-check-go-v6    profile-go-v6    saturation-go-v6     \
-        run-go-v7    microbenchmark-go-v7    heisenbug-check-go-v7    profile-go-v7    saturation-go-v7     \
-        run-go-v10   microbenchmark-go-v10   heisenbug-check-go-v10   profile-go-v10   saturation-go-v10    \
-        run-java-v1  microbenchmark-java-v1  heisenbug-check-java-v1  profile-java-v1  saturation-java-v1   create-jar-java-v1  \
-        run-java-v2  microbenchmark-java-v2  heisenbug-check-java-v2  profile-java-v2  saturation-java-v2   create-jar-java-v2  \
-        run-java-v3  microbenchmark-java-v3  heisenbug-check-java-v3  profile-java-v3  saturation-java-v3   create-jar-java-v3  \
-        run-java-v4  microbenchmark-java-v4  heisenbug-check-java-v4  profile-java-v4  saturation-java-v4   create-jar-java-v4  \
-        run-java-v5  microbenchmark-java-v5  heisenbug-check-java-v5  profile-java-v5  saturation-java-v5   create-jar-java-v5  \
-        run-java-v6  microbenchmark-java-v6  heisenbug-check-java-v6  profile-java-v6  saturation-java-v6   create-jar-java-v6  \
-        run-java-v7  microbenchmark-java-v7  heisenbug-check-java-v7  profile-java-v7  saturation-java-v7   create-jar-java-v7  \
-        run-java-v8  microbenchmark-java-v8  heisenbug-check-java-v8  profile-java-v8  saturation-java-v8   create-jar-java-v8  \
-        run-java-v9  microbenchmark-java-v9  heisenbug-check-java-v9  profile-java-v9  saturation-java-v9   create-jar-java-v9  \
-        run-java-v10 microbenchmark-java-v10 heisenbug-check-java-v10 profile-java-v10 saturation-java-v10  create-jar-java-v10 \
-		benchmark-all-go benchmark-all-java benchmark-all \
-		heisenbug-all-go heisenbug-all-java heisenbug-all \
-		saturation-all-go saturation-all-java saturation-all
-		
+        run-go-v1    microbenchmark-go-v1    heisenbug-check-go-v1    profile-go-v1    saturation-go-v1    progression-go-v1 \
+        run-go-v2    microbenchmark-go-v2    heisenbug-check-go-v2    profile-go-v2    saturation-go-v2    progression-go-v2 \
+        run-go-v3    microbenchmark-go-v3    heisenbug-check-go-v3    profile-go-v3    saturation-go-v3    progression-go-v3 \
+        run-go-v4    microbenchmark-go-v4    heisenbug-check-go-v4    profile-go-v4    saturation-go-v4    progression-go-v4 \
+        run-go-v6    microbenchmark-go-v6    heisenbug-check-go-v6    profile-go-v6    saturation-go-v6    progression-go-v6 \
+        run-go-v7    microbenchmark-go-v7    heisenbug-check-go-v7    profile-go-v7    saturation-go-v7    progression-go-v7 \
+        run-go-v10   microbenchmark-go-v10   heisenbug-check-go-v10   profile-go-v10   saturation-go-v10   progression-go-v10 \
+        run-java-v1  microbenchmark-java-v1  heisenbug-check-java-v1  profile-java-v1  saturation-java-v1  progression-java-v1 \
+        run-java-v2  microbenchmark-java-v2  heisenbug-check-java-v2  profile-java-v2  saturation-java-v2  progression-java-v2 \
+        run-java-v3  microbenchmark-java-v3  heisenbug-check-java-v3  profile-java-v3  saturation-java-v3  progression-java-v3 \
+        run-java-v4  microbenchmark-java-v4  heisenbug-check-java-v4  profile-java-v4  saturation-java-v4  progression-java-v4 \
+        run-java-v5  microbenchmark-java-v5  heisenbug-check-java-v5  profile-java-v5  saturation-java-v5  progression-java-v5 \
+        run-java-v6  microbenchmark-java-v6  heisenbug-check-java-v6  profile-java-v6  saturation-java-v6  progression-java-v6 \
+        run-java-v7  microbenchmark-java-v7  heisenbug-check-java-v7  profile-java-v7  saturation-java-v7  progression-java-v7 \
+        run-java-v8  microbenchmark-java-v8  heisenbug-check-java-v8  profile-java-v8  saturation-java-v8  progression-java-v8 \
+        run-java-v9  microbenchmark-java-v9  heisenbug-check-java-v9  profile-java-v9  saturation-java-v9  progression-java-v9 \
+        run-java-v10 microbenchmark-java-v10 heisenbug-check-java-v10 profile-java-v10 saturation-java-v10 progression-java-v10 \
+        benchmark-all-go benchmark-all-java benchmark-all \
+        heisenbug-all-go heisenbug-all-java heisenbug-all \
+        saturation-all-go saturation-all-java saturation-all \
+        progression-all-go progression-all-java progression-all
 
 all: help
 
@@ -41,22 +42,19 @@ help:
 	@echo "  make heisenbug-check-go-vX     - Check heisenbug of VX in Go"
 	@echo "  make profile-go-vX             - Profile of VX in Go"
 	@echo "  make saturation-go-vX          - Saturation test of VX in Go"
-	@echo "                                   Example: make saturation-go-v2 THREADS=8 EXECS=40"
-	@echo "  make run-java-vX               - Runs the VX in Java (where X in (1,2,3,4,5,6,7,8,9,10))"
+	@echo "  make progression-go-vX         - Progression degradation test of VX in Go (MAX_THREADS=8)"
+	@echo "  make run-java-vX               - Runs the VX in Java (where X in (1..10))"
 	@echo "  make microbenchmark-java-vX    - Microbenchmark of VX in Java"
 	@echo "  make heisenbug-check-java-vX   - Check heisenbug of VX in Java"
 	@echo "  make profile-java-vX           - Profile of VX in Java"
-	@echo "  make create-jar-java-vX        - Before saturation test of VX in Java"
 	@echo "  make saturation-java-vX        - Saturation test of VX in Java"
+	@echo "  make progression-java-vX       - Progression degradation test of VX in Java (MAX_THREADS=8)"
 	@echo "  make benchmark-all             - All Benchmark in Java and Go"
-	@echo "  make benchmark-all-java        - All Benchmark in Java"
-	@echo "  make benchmark-all-go          - All Benchmark in Go"
 	@echo "  make heisenbug-all             - All Heisenbug check in Java and Go"
-	@echo "  make heisenbug-all-java        - All Heisenbug check in Java"
-	@echo "  make heisenbug-all-go          - All Heisenbug check in Go"
 	@echo "  make saturation-all            - All Saturation test in Java and Go"
-	@echo "  make saturation-all-java       - All Saturation test in Java"
-	@echo "  make saturation-all-go         - All Saturation test in Go"
+	@echo "  make progression-all           - Run all progression degradation tests (Java and Go)"
+	@echo "  make progression-all-go        - Run all progression degradation tests for Go"
+	@echo "  make progression-all-java      - Run all progression degradation tests for Java"
 
 # 1. Python
 create-data:
@@ -67,6 +65,20 @@ create-data:
 clean-profile:
 	-@pkill -f "go tool pprof"
 	-@pkill -f "go tool trace"
+
+define run_progression_go
+	@cd $(GO_DIR) && go test -c -tags saturation ./$(1)/ -o ./$(1)/saturation.test > /dev/null 2>&1
+	@echo "Threads,Time_MS" | tee $(GO_DIR)/$(1)/progression_$(1).txt
+	@for t in $$(seq 1 $(MAX_THREADS)); do \
+		START_TIME=$$(python3 -c 'import time; print(int(time.time() * 1000))'); \
+		cd $(GO_DIR) && ./$(1)/saturation.test -test.v -test.run=^TestMacroBenchmarkSaturation$$ -threads=$$t -execs=$$t > /dev/null 2>&1; \
+		END_TIME=$$(python3 -c 'import time; print(int(time.time() * 1000))'); \
+		ELAPSED=$$((END_TIME - START_TIME)); \
+		echo "$$t,$$ELAPSED" | tee -a $(GO_DIR)/$(1)/progression_$(1).txt; \
+		sleep 2; \
+	done
+	@rm -f $(GO_DIR)/$(1)/saturation.test
+endef
 
 ## V1
 run-go-v1:
@@ -94,6 +106,10 @@ saturation-go-v1:
 	cd $(GO_DIR) && \
 	go test -v -tags saturation -run=^TestMacroBenchmarkSaturation$$ ./v1/ -args -threads=$(THREADS) -execs=$(EXECS)
 
+progression-go-v1:
+	@echo "Starting Progression Test Go V1..."
+	$(call run_progression_go,v1)
+
 ## V2
 run-go-v2:
 	@echo "Run Go V2..."
@@ -119,6 +135,10 @@ saturation-go-v2:
 	@echo "Running Macro Saturation Test Go V2 (THREADS=$(THREADS), EXECS=$(EXECS))..."
 	cd $(GO_DIR) && \
 	go test -v -tags saturation -run=^TestMacroBenchmarkSaturation$$ ./v2/ -args -threads=$(THREADS) -execs=$(EXECS)
+
+progression-go-v2:
+	@echo "Starting Progression Test Go V2..."
+	$(call run_progression_go,v2)
 
 ## V3
 run-go-v3:
@@ -146,6 +166,10 @@ saturation-go-v3:
 	cd $(GO_DIR) && \
 	go test -v -tags saturation -run=^TestMacroBenchmarkSaturation$$ ./v3/ -args -threads=$(THREADS) -execs=$(EXECS)
 
+progression-go-v3:
+	@echo "Starting Progression Test Go V3..."
+	$(call run_progression_go,v3)
+
 ## V4
 run-go-v4:
 	@echo "Run Go V4..."
@@ -171,6 +195,10 @@ saturation-go-v4:
 	@echo "Running Macro Saturation Test Go V4 (THREADS=$(THREADS), EXECS=$(EXECS))..."
 	cd $(GO_DIR) && \
 	go test -v -tags saturation -run=^TestMacroBenchmarkSaturation$$ ./v4/ -args -threads=$(THREADS) -execs=$(EXECS)
+
+progression-go-v4:
+	@echo "Starting Progression Test Go V4..."
+	$(call run_progression_go,v4)
 
 ## V6
 run-go-v6:
@@ -198,6 +226,10 @@ saturation-go-v6:
 	cd $(GO_DIR) && \
 	go test -v -tags saturation -run=^TestMacroBenchmarkSaturation$$ ./v6/ -args -threads=$(THREADS) -execs=$(EXECS)
 
+progression-go-v6:
+	@echo "Starting Progression Test Go V6..."
+	$(call run_progression_go,v6)
+
 ## V7
 run-go-v7:
 	@echo "Run Go V7..."
@@ -223,6 +255,10 @@ saturation-go-v7:
 	@echo "Running Macro Saturation Test Go V7 (THREADS=$(THREADS), EXECS=$(EXECS))..."
 	cd $(GO_DIR) && \
 	go test -v -tags saturation -run=^TestMacroBenchmarkSaturation$$ ./v7/ -args -threads=$(THREADS) -execs=$(EXECS)
+
+progression-go-v7:
+	@echo "Starting Progression Test Go V7..."
+	$(call run_progression_go,v7)
 
 ## V10
 run-go-v10:
@@ -250,8 +286,38 @@ saturation-go-v10:
 	cd $(GO_DIR) && \
 	go test -v -tags saturation -run=^TestMacroBenchmarkSaturation$$ ./v10/ -args -threads=$(THREADS) -execs=$(EXECS)
 
+progression-go-v10:
+	@echo "Starting Progression Test Go V10..."
+	$(call run_progression_go,v10)
+
 
 # 3. JAVA
+define run_jmeter_java
+	cd $(JAVA_DIR) && mvn clean package -pl $(1) -P app-exec
+	mkdir -p /opt/apache-jmeter-5.6.3/lib/ext
+	cp $(JAVA_DIR)/$(1)/target/*.jar /opt/apache-jmeter-5.6.3/lib/ext/
+	rm -f $(JAVA_DIR)/$(1)/results_saturation_$(1).jtl
+	/opt/apache-jmeter-5.6.3/bin/jmeter.sh -Djava.awt.headless=true -n -t kmeans_test.jmx -Jusuarios=$(THREADS) -l $(JAVA_DIR)/$(1)/results_saturation_$(1).jtl
+endef
+
+define run_progression_java
+	@cd $(JAVA_DIR) && mvn clean package -pl $(1) -P app-exec > /dev/null 2>&1
+	@mkdir -p /opt/apache-jmeter-5.6.3/lib/ext
+	@rm -f /opt/apache-jmeter-5.6.3/lib/ext/v*.jar
+	@rm -f /opt/apache-jmeter-5.6.3/lib/ext/*SNAPSHOT.jar
+	@cp $(JAVA_DIR)/$(1)/target/*.jar /opt/apache-jmeter-5.6.3/lib/ext/
+	@echo "Threads,Time_MS" | tee $(JAVA_DIR)/$(1)/progression_$(1).txt
+	@for t in $$(seq 1 $(MAX_THREADS)); do \
+		rm -f $(JAVA_DIR)/$(1)/results_saturation_$(1).jtl; \
+		START_TIME=$$(python3 -c 'import time; print(int(time.time() * 1000))'); \
+		/opt/apache-jmeter-5.6.3/bin/jmeter.sh -Djava.awt.headless=true -n -t kmeans_test.jmx -Jusuarios=$$t -l $(JAVA_DIR)/$(1)/results_saturation_$(1).jtl > /dev/null 2>&1; \
+		END_TIME=$$(python3 -c 'import time; print(int(time.time() * 1000))'); \
+		ELAPSED=$$((END_TIME - START_TIME)); \
+		echo "$$t,$$ELAPSED" | tee -a $(JAVA_DIR)/$(1)/progression_$(1).txt; \
+		sleep 2; \
+	done
+endef
+
 ## V1
 run-java-v1:
 	@echo "Run Java V1..."
@@ -270,16 +336,12 @@ heisenbug-check-java-v1:
 	@echo "Concurrency Test Java V1..."
 	cd $(JAVA_DIR) && echo "It's OK!" > v1/concurrency_v1.txt
 
-create-jar-java-v1:
-	@echo "Creating conventional JAR for Java V1..."
-	cd $(JAVA_DIR) && mvn clean package -pl v1 -P app-exec
+saturation-java-v1:
+	$(call run_jmeter_java,v1)
 
-saturation-java-v1: create-jar-java-v1
-	@echo "Running Saturation Test for Java V1..."
-	$(JMETER_EXE) -n -t kmeans_test.jmx \
-		-l $(JAVA_DIR)/v1/results_saturation_v1.jtl \
-		-j $(JAVA_DIR)/v1/jmeter_v1.log \
-		-Jjar_target=$(JAVA_DIR)/v1/target/v1.jar
+progression-java-v1:
+	@echo "Starting Progression Test Java V1..."
+	$(call run_progression_java,v1)
 
 ## V2
 run-java-v2:
@@ -301,16 +363,12 @@ heisenbug-check-java-v2:
 	java -jar v2/target/jcstress-tests.jar -m quick | tee v2/concurrency_v2.txt && \
 	rm -r *.bin.gz
 
-create-jar-java-v2:
-	@echo "Creating conventional JAR for Java V2..."
-	cd $(JAVA_DIR) && mvn clean package -pl v2 -P app-exec
+saturation-java-v2:
+	$(call run_jmeter_java,v2)
 
-saturation-java-v2: create-jar-java-v2
-	@echo "Running Saturation Test for Java V2..."
-	$(JMETER_EXE) -n -t kmeans_test.jmx \
-		-l $(JAVA_DIR)/v2/results_saturation_v2.jtl \
-		-j $(JAVA_DIR)/v2/jmeter_v2.log \
-		-Jjar_target=$(JAVA_DIR)/v2/target/v2.jar
+progression-java-v2:
+	@echo "Starting Progression Test Java V2..."
+	$(call run_progression_java,v2)
 
 ## V3
 run-java-v3:
@@ -332,16 +390,12 @@ heisenbug-check-java-v3:
 	java -jar v3/target/jcstress-tests.jar -m quick | tee v3/concurrency_v3.txt && \
 	rm -r *.bin.gz
 
-create-jar-java-v3:
-	@echo "Creating conventional JAR for Java V3..."
-	cd $(JAVA_DIR) && mvn clean package -pl v3 -P app-exec
+saturation-java-v3:
+	$(call run_jmeter_java,v3)
 
-saturation-java-v3: create-jar-java-v3
-	@echo "Running Saturation Test for Java V3..."
-	$(JMETER_EXE) -n -t kmeans_test.jmx \
-		-l $(JAVA_DIR)/v3/results_saturation_v3.jtl \
-		-j $(JAVA_DIR)/v3/jmeter_v3.log \
-		-Jjar_target=$(JAVA_DIR)/v3/target/v3.jar
+progression-java-v3:
+	@echo "Starting Progression Test Java V3..."
+	$(call run_progression_java,v3)
 
 ## V4
 run-java-v4:
@@ -363,16 +417,12 @@ heisenbug-check-java-v4:
 	java -jar v4/target/jcstress-tests.jar -m quick | tee v4/concurrency_v4.txt && \
 	rm -r *.bin.gz
 
-create-jar-java-v4:
-	@echo "Creating conventional JAR for Java V4..."
-	cd $(JAVA_DIR) && mvn clean package -pl v4 -P app-exec
+saturation-java-v4:
+	$(call run_jmeter_java,v4)
 
-saturation-java-v4: create-jar-java-v4
-	@echo "Running Saturation Test for Java V4..."
-	$(JMETER_EXE) -n -t kmeans_test.jmx \
-		-l $(JAVA_DIR)/v4/results_saturation_v4.jtl \
-		-j $(JAVA_DIR)/v4/jmeter_v4.log \
-		-Jjar_target=$(JAVA_DIR)/v4/target/v4.jar
+progression-java-v4:
+	@echo "Starting Progression Test Java V4..."
+	$(call run_progression_java,v4)
 
 ## V5
 run-java-v5:
@@ -394,16 +444,12 @@ heisenbug-check-java-v5:
 	java -jar v5/target/jcstress-tests.jar -m quick | tee v5/concurrency_v5.txt && \
 	rm -r *.bin.gz
 
-create-jar-java-v5:
-	@echo "Creating conventional JAR for Java V5..."
-	cd $(JAVA_DIR) && mvn clean package -pl v5 -P app-exec
+saturation-java-v5:
+	$(call run_jmeter_java,v5)
 
-saturation-java-v5: create-jar-java-v5
-	@echo "Running Saturation Test for Java V5..."
-	$(JMETER_EXE) -n -t kmeans_test.jmx \
-		-l $(JAVA_DIR)/v5/results_saturation_v5.jtl \
-		-j $(JAVA_DIR)/v5/jmeter_v5.log \
-		-Jjar_target=$(JAVA_DIR)/v5/target/v5.jar
+progression-java-v5:
+	@echo "Starting Progression Test Java V5..."
+	$(call run_progression_java,v5)
 
 ## V6
 run-java-v6:
@@ -425,16 +471,12 @@ heisenbug-check-java-v6:
 	java -jar v6/target/jcstress-tests.jar -m quick | tee v6/concurrency_v6.txt && \
 	rm -r *.bin.gz
 
-create-jar-java-v6:
-	@echo "Creating conventional JAR for Java V6..."
-	cd $(JAVA_DIR) && mvn clean package -pl v6 -P app-exec
+saturation-java-v6:
+	$(call run_jmeter_java,v6)
 
-saturation-java-v6: create-jar-java-v6
-	@echo "Running Saturation Test for Java V6..."
-	$(JMETER_EXE) -n -t kmeans_test.jmx \
-		-l $(JAVA_DIR)/v6/results_saturation_v6.jtl \
-		-j $(JAVA_DIR)/v6/jmeter_v6.log \
-		-Jjar_target=$(JAVA_DIR)/v6/target/v6.jar
+progression-java-v6:
+	@echo "Starting Progression Test Java V6..."
+	$(call run_progression_java,v6)
 
 ## V7
 run-java-v7:
@@ -456,16 +498,12 @@ heisenbug-check-java-v7:
 	java -jar v7/target/jcstress-tests.jar -m quick | tee v7/concurrency_v7.txt && \
 	rm -r *.bin.gz
 
-create-jar-java-v7:
-	@echo "Creating conventional JAR for Java V7..."
-	cd $(JAVA_DIR) && mvn clean package -pl v7 -P app-exec
+saturation-java-v7:
+	$(call run_jmeter_java,v7)
 
-saturation-java-v7: create-jar-java-v7
-	@echo "Running Saturation Test for Java V7..."
-	$(JMETER_EXE) -n -t kmeans_test.jmx \
-		-l $(JAVA_DIR)/v7/results_saturation_v7.jtl \
-		-j $(JAVA_DIR)/v7/jmeter_v7.log \
-		-Jjar_target=$(JAVA_DIR)/v7/target/v7.jar
+progression-java-v7:
+	@echo "Starting Progression Test Java V7..."
+	$(call run_progression_java,v7)
 
 ## V8
 run-java-v8:
@@ -487,17 +525,12 @@ heisenbug-check-java-v8:
 	java -jar v8/target/jcstress-tests.jar -m quick | tee v8/concurrency_v8.txt && \
 	rm -r *.bin.gz
 
-create-jar-java-v8:
-	@echo "Creating conventional JAR for Java V8..."
-	cd $(JAVA_DIR) && mvn clean package -pl v8 -P app-exec
+saturation-java-v8:
+	$(call run_jmeter_java,v8)
 
-saturation-java-v8: create-jar-java-v8
-	@echo "Running Saturation Test for Java V8..."
-	$(JMETER_EXE) -n -t kmeans_test.jmx \
-		-l $(JAVA_DIR)/v8/results_saturation_v8.jtl \
-		-j $(JAVA_DIR)/v8/jmeter_v8.log \
-		-Jjar_target=$(JAVA_DIR)/v8/target/v8.jar \
-		-Jvm_args="-XX:+UseParallelGC"
+progression-java-v8:
+	@echo "Starting Progression Test Java V8..."
+	$(call run_progression_java,v8)
 
 ## V9
 run-java-v9:
@@ -519,17 +552,12 @@ heisenbug-check-java-v9:
 	java -jar v9/target/jcstress-tests.jar -m quick | tee v9/concurrency_v9.txt && \
 	rm -r *.bin.gz
 
-create-jar-java-v9:
-	@echo "Creating conventional JAR for Java V9..."
-	cd $(JAVA_DIR) && mvn clean package -pl v9 -P app-exec
+saturation-java-v9:
+	$(call run_jmeter_java,v9)
 
-saturation-java-v9: create-jar-java-v9
-	@echo "Running Saturation Test for Java V9..."
-	$(JMETER_EXE) -n -t kmeans_test.jmx \
-		-l $(JAVA_DIR)/v9/results_saturation_v9.jtl \
-		-j $(JAVA_DIR)/v9/jmeter_v9.log \
-		-Jjar_target=$(JAVA_DIR)/v9/target/v9.jar \
-		-Jvm_args="-XX:+UseZGC"
+progression-java-v9:
+	@echo "Starting Progression Test Java V9..."
+	$(call run_progression_java,v9)
 
 ## V10
 run-java-v10:
@@ -551,18 +579,15 @@ heisenbug-check-java-v10:
 	java -jar v10/target/jcstress-tests.jar -m quick | tee v10/concurrency_v10.txt && \
 	rm -r *.bin.gz
 
-create-jar-java-v10:
-	@echo "Creating conventional JAR for Java V10..."
-	cd $(JAVA_DIR) && mvn clean package -pl v10 -P app-exec
+saturation-java-v10:
+	$(call run_jmeter_java,v10)
 
-saturation-java-v10: create-jar-java-v10
-	@echo "Running Saturation Test for Java V10..."
-	$(JMETER_EXE) -n -t kmeans_test.jmx \
-		-l $(JAVA_DIR)/v10/results_saturation_v10.jtl \
-		-j $(JAVA_DIR)/v10/jmeter_v10.log \
-		-Jjar_target=$(JAVA_DIR)/v10/target/v10.jar
+progression-java-v10:
+	@echo "Starting Progression Test Java V10..."
+	$(call run_progression_java,v10)
 
-# Link
+
+# Shortcuts / Batch Runs
 benchmark-all-go:
 	@echo "Starting all Go microbenchmarks with 10s intervals..."
 	@for v in $(GO_VERSIONS); do \
@@ -625,3 +650,24 @@ saturation-all-java:
 
 saturation-all: saturation-all-go saturation-all-java
 	@echo "All saturation test (Go and Java) have been completed!"
+
+progression-all-go:
+	@echo "Starting a series of progress tests in Go..."
+	@for v in $(GO_VERSIONS); do \
+		echo "=================================================="; \
+		$(MAKE) progression-go-$$v; \
+		echo "Waiting 10 seconds for the CPU to cool down..."; \
+		sleep 10; \
+	done
+
+progression-all-java:
+	@echo "Starting a series of progress tests in Java..."
+	@for v in $(JAVA_VERSIONS); do \
+		echo "=================================================="; \
+		$(MAKE) progression-java-$$v; \
+		echo "Waiting 10 seconds for the CPU to cool down..."; \
+		sleep 10; \
+	done
+
+progression-all: progression-all-go progression-all-java
+	@echo "All progressive degradation tests have been successfully completed!"

@@ -2,7 +2,7 @@
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="KMeans Saturation Test" enabled="true">
-      <stringProp name="TestPlan.comments">Teste de Capacidade e Saturação para os submódulos KMeans</stringProp>
+      <stringProp name="TestPlan.comments">Capacity test KMeans</stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
@@ -11,8 +11,8 @@
     </TestPlan>
     <hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group - Carga Progressiva" enabled="true">
-        <intProp name="ThreadGroup.num_threads">50</intProp>
-        <intProp name="ThreadGroup.ramp_time">60</intProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(usuarios,1)}</stringProp>
+        <intProp name="ThreadGroup.ramp_time">1</intProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
@@ -21,38 +21,12 @@
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <SystemSampler guiclass="SystemSamplerGui" testclass="SystemSampler" testname="Execute KMeans JAR" enabled="true">
-          <boolProp name="SystemSampler.stdin_command">false</boolProp>
-          <stringProp name="SystemSampler.command">java</stringProp>
-          <elementProp name="SystemSampler.arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
-            <collectionProp name="Arguments.arguments">
-              <elementProp name="" elementType="Argument">
-                <stringProp name="Argument.name"></stringProp>
-                <stringProp name="Argument.value">${__P(vm_args,)}</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-              <elementProp name="" elementType="Argument">
-                <stringProp name="Argument.name"></stringProp>
-                <stringProp name="Argument.value">-Xmx4g</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-              <elementProp name="" elementType="Argument">
-                <stringProp name="Argument.name"></stringProp>
-                <stringProp name="Argument.value">-jar</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-              <elementProp name="" elementType="Argument">
-                <stringProp name="Argument.name"></stringProp>
-                <stringProp name="Argument.value">${__P(jar_target)}</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-            </collectionProp>
-          </elementProp>
-          <elementProp name="SystemSampler.environment" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <JavaSampler guiclass="JavaTestSamplerGui" testclass="JavaSampler" testname="Execute KMeans Java Class" enabled="true">
+          <stringProp name="classname">com.kmeans.benchmarks.KmeansJMeterBenchmark</stringProp>
+          <elementProp name="arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="SystemSampler.directory"></stringProp>
-        </SystemSampler>
+        </JavaSampler>
         <hashTree/>
       </hashTree>
     </hashTree>
