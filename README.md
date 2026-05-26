@@ -41,9 +41,6 @@ Implementation and optimisation of the K-Means algorithm in Java and Go language
 | :construction:     | [Go v7](./go/v7/)                                | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Go v10](./go/v10/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 
-> [!WARNING]
-> In the Go profile, VS Code sometimes opens port 8082 on the IP address [:1]; simply change it to localhost.
-
 ## Prerequisites to Run:
 
 > [!NOTE]

@@ -7,7 +7,7 @@ public class Main {
     public static void main(String[] args) {
         
         try {
-            List<Point> points = CSVReader.loadPoints(Paths.get("../data/dataset_1000000x100_range_0.0_to_100.0.csv"));
+            List<Point> points = CSVReader.loadPoints(Paths.get("/workspaces/K-Means/data/dataset_1000000x100_range_0.0_to_100.0.csv"));
             Kmeans ai = new Kmeans(3, points, 2026);
             ai.fit();
             //System.err.printf("Centroids: %s%n", ai.getCentroids());
