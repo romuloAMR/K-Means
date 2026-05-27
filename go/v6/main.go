@@ -1,26 +1,11 @@
 package main
 
-import (
-	"fmt"
-	"os"
-	"runtime"
-	"runtime/pprof"
-    "runtime/trace"
-)
+import "fmt"
 
 func main() {
-    // Profile
-	cpuFile, _ := os.Create("v6/profile/cpu.prof")
-    defer cpuFile.Close()
-    pprof.StartCPUProfile(cpuFile)
-    defer pprof.StopCPUProfile()
-    tf, _ := os.Create("v6/profile/trace.out")
-    defer tf.Close()
-    trace.Start(tf)
-    defer trace.Stop()
-    // End Profile
-
-	points, err := LoadPoints("../data/dataset_1000000x100_range_0.0_to_100.0.csv")
+	points, err := LoadPoints(
+		"/workspaces/K-Means/data/dataset_1000000x100_range_0.0_to_100.0.csv",
+	)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -33,13 +18,4 @@ func main() {
 	}
 
 	ai.Fit()
-    //fmt.Println("Centroids:", ai.GetCentroids())
-    //fmt.Println("Clusters:", ai.GetClusters())
-
-    // Profile
-	heapFile, _ := os.Create("v6/profile/heap.prof")
-	runtime.GC()
-	pprof.WriteHeapProfile(heapFile)
-	defer heapFile.Close()
-    // End Profile
 }

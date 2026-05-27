@@ -5,6 +5,8 @@ description = "Implementation and optimisation of the K-Means algorithm in Java 
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "jupyterlab>=4.5.7",
     "matplotlib>=3.10.9",
     "pandas>=3.0.2",
+    "plotly>=6.7.0",
 ]
