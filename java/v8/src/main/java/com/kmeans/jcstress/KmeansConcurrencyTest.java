@@ -20,34 +20,27 @@ public class KmeansConcurrencyTest {
 
     @JCStressTest
     @Outcome(id = "1", expect = Expect.ACCEPTABLE, desc = "Visibility guaranteed: Updated centroids successfully read.")
-    @Outcome(id = "0", expect = Expect.ACCEPTABLE, desc = "Main thread read state before processing completed.")
     @Outcome(id = "-1", expect = Expect.FORBIDDEN, desc = "Visibility/Data Corruption Error: Execution ended, but read old/broken data.")
     @State
     public static class KmeansVisibilitySpec {
         
         private final Kmeans kmeans = new Kmeans(3, createDummyPoints(), 2026);
-        private volatile boolean isProcessingAlive = true;
 
         @Actor
         public void processingThread() {
             try {
                 kmeans.updateCentroids(2);
             } catch (Exception e) {
-                return; 
+                return;
             }
-            isProcessingAlive = false;
         }
 
-        @Actor
-        public void mainThread(I_Result r) {
-            while (isProcessingAlive) {
-                Thread.yield();
-            }
-
+        @Arbiter
+        public void inspectFinalState(I_Result r) {
             try {
                 Point[] currentCentroids = kmeans.getCentroids();
                 if (currentCentroids == null || currentCentroids[0] == null) {
-                    r.r1 = 0;
+                    r.r1 = -1;
                     return;
                 }
 
@@ -65,13 +58,11 @@ public class KmeansConcurrencyTest {
 
     @JCStressTest
     @Outcome(id = "1", expect = Expect.ACCEPTABLE, desc = "No reordering: Memory mutations published in correct chronological order.")
-    @Outcome(id = "0", expect = Expect.ACCEPTABLE, desc = "Main thread evaluated before processing actually started.")
-    @Outcome(id = "-1", expect = Expect.FORBIDDEN, desc = "Reordering problem: Thread died, but assignments contain uninitialized/stale values.")
+    @Outcome(id = "-1", expect = Expect.FORBIDDEN, desc = "Reordering problem: Method ended, but assignments contain uninitialized/stale values.")
     @State
     public static class KmeansReorderingSpec {
         
         private final Kmeans kmeans = new Kmeans(3, createDummyPoints(), 42);
-        private volatile boolean isThreadAlive = true;
 
         @Actor
         public void processingThread() {
@@ -80,19 +71,14 @@ public class KmeansConcurrencyTest {
             } catch (Exception e) {
                 return;
             }
-            isThreadAlive = false; 
         }
 
-        @Actor
-        public void mainThread(I_Result r) {
-            while (isThreadAlive) {
-                Thread.yield();
-            }
-
+        @Arbiter
+        public void inspectFinalState(I_Result r) {
             try {
                 int[] assignments = kmeans.getAssignments();
                 if (assignments == null || assignments.length == 0) {
-                    r.r1 = 0;
+                    r.r1 = -1;
                     return;
                 }
                 int firstAssignment = assignments[0];

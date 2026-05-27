@@ -7,8 +7,6 @@ import org.openjdk.jcstress.infra.results.I_Result;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.DoubleAccumulator;
 
 public class KmeansConcurrencyTest {
 
@@ -71,6 +69,7 @@ public class KmeansConcurrencyTest {
             try {
                 kmeans.clustering(2);
             } catch (Exception e) {
+                return;
             }
         }
 
@@ -95,30 +94,54 @@ public class KmeansConcurrencyTest {
     }
 
     @JCStressTest
-    @Outcome(id = "2", expect = Expect.ACCEPTABLE, desc = "Atomic updates safely consolidated across threads without locks.")
-    @Outcome(id = "-1", expect = Expect.FORBIDDEN, desc = "Data corruption or race condition in atomic accumulation.")
+    @Outcome(id = "1", expect = Expect.ACCEPTABLE, desc = "No Race Condition: Internal workers mutated disjoint indices safely.")
+    @Outcome(id = "-1", expect = Expect.FORBIDDEN, desc = "Race Condition detected: Internal threads interfered with each other's memory slots.")
     @State
-    public static class KmeansAtomicAccumulationSpec {
-        private final AtomicInteger count = new AtomicInteger(0);
-        private final DoubleAccumulator sum = new DoubleAccumulator(Double::sum, 0.0);
+    public static class KmeansSharedRaceSpec {
+        private final List<Point> dummyPoints = createDummyPoints();
+        private final Kmeans kmeans = new Kmeans(3, dummyPoints, 2026);
+        private final int numPoints = dummyPoints.size();
+        private final int grainSize = (numPoints + 2 - 1) / 2;
 
         @Actor
         public void internalWorkerThread1() {
-            count.addAndGet(10);
-            sum.accumulate(50.5);
+            int start = 0 * grainSize;
+            int end = Math.min(start + grainSize, numPoints);
+            
+            int[] assignments = kmeans.getAssignments();
+            for (int j = start; j < end; j++) {
+                assignments[j] = kmeans.findNearestCentroid(dummyPoints.get(j));
+            }
         }
 
         @Actor
         public void internalWorkerThread2() {
-            count.addAndGet(5);
-            sum.accumulate(25.0);
+            int start = 1 * grainSize;
+            int end = Math.min(start + grainSize, numPoints);
+            
+            int[] assignments = kmeans.getAssignments();
+            for (int j = start; j < end; j++) {
+                assignments[j] = kmeans.findNearestCentroid(dummyPoints.get(j));
+            }
         }
 
         @Arbiter
         public void inspectFinalState(I_Result r) {
-            if (count.get() == 15 && sum.get() == 75.5) {
-                r.r1 = 2;
-            } else {
+            try {
+                int[] assignments = kmeans.getAssignments();
+                if (assignments != null && assignments.length == 3) {
+                    boolean valid = true;
+                    for (int assignment : assignments) {
+                        if (assignment < 0 || assignment >= 3) {
+                            valid = false;
+                            break;
+                        }
+                    }
+                    r.r1 = valid ? 1 : -1;
+                } else {
+                    r.r1 = -1;
+                }
+            } catch (Exception e) {
                 r.r1 = -1;
             }
         }

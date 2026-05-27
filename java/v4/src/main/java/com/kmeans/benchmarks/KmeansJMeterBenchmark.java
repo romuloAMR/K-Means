@@ -23,8 +23,8 @@ public class KmeansJMeterBenchmark extends AbstractJavaSamplerClient implements 
         SampleResult result = new SampleResult();
         result.setSampleLabel("Kmeans Macrobenchmark Test");
         
-        Path arquivoOriginal = Paths.get("data/dataset_1000000x100_range_0.0_to_100.0.csv");
-        Path arquivoTemp = Paths.get("data/temp_" + UUID.randomUUID().toString() + ".csv");
+        Path arquivoOriginal = Paths.get("/workspaces/K-Means/data/dataset_1000000x100_range_0.0_to_100.0.csv");
+        Path arquivoTemp = Paths.get("/workspaces/K-Means/data/temp_" + UUID.randomUUID().toString() + ".csv");
         result.sampleStart();
 
         try {
