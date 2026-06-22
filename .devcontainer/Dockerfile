@@ -24,6 +24,10 @@ RUN mkdir -p /go/bin && \
     /usr/local/go/bin/go install golang.org/x/tools/cmd/stress@latest && \
     /usr/local/go/bin/go install golang.org/x/perf/cmd/benchstat@latest
 
+ADD apache-jmeter-5.6.3.tgz /opt/
+
+RUN ln -s /opt/apache-jmeter-5.6.3/bin/jmeter /usr/local/bin/jmeter
+
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /workspace

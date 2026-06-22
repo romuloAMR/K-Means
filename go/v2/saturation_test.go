@@ -2,56 +2,94 @@
 package main
 
 import (
-    "flag"
-    "fmt"
-    "sync"
-    "testing"
-    "time"
+	"flag"
+	"fmt"
+	"runtime"
+	"sync"
+	"testing"
+	"time"
 )
 
 var (
-    numThreads = flag.Int("threads", 4, "Número de threads paralelas (Atores)")
-    numExecs   = flag.Int("execs", 20, "Quantidade total de execuções a realizar")
+	numThreads = flag.Int(
+		"threads",
+		runtime.NumCPU(),
+		"Quantidade de workers",
+	)
+
+	numExecs = flag.Int(
+		"execs",
+		runtime.NumCPU(),
+		"Quantidade total de execuções",
+	)
 )
 
 func TestMacroBenchmarkSaturation(t *testing.T) {
-    fmt.Println("[Macro] Carregando dataset para a RAM...")
-    pts, err := LoadPoints("../../data/dataset_1000000x100_range_0.0_to_100.0.csv")
-    if err != nil {
-        t.Fatalf("Falha ao carregar dados: %v", err)
-    }
-    fmt.Printf("[Macro] Iniciando teste: %d execuções divididas em %d threads...\n", *numExecs, *numThreads)
+	path := "/workspaces/K-Means/data/dataset_1000000x100_range_0.0_to_100.0.csv"
 
-    jobQueue := make(chan int, *numExecs)
-    for i := 1; i <= *numExecs; i++ {
-        jobQueue <- i
-    }
-    close(jobQueue)
+	fmt.Println("========================================")
+	fmt.Printf("Threads:      %d\n", *numThreads)
+	fmt.Printf("Executions:   %d\n", *numExecs)
+	fmt.Printf("CPUs:         %d\n", runtime.NumCPU())
+	fmt.Println("========================================")
 
-    var wg sync.WaitGroup
-    startTime := time.Now()
+	jobQueue := make(chan int, *numExecs)
 
-    for w := 0; w < *numThreads; w++ {
-        wg.Add(1)
-        go func(workerID int) {
-            defer wg.Done()
-            for range jobQueue {
-                localPoints := make([]Point, len(pts))
-                copy(localPoints, pts)
+	for i := 0; i < *numExecs; i++ {
+		jobQueue <- i
+	}
 
-                k, _ := Kmeans(3, localPoints, 2026)
-                _ = k.Fit()
-            }
-        }(w)
-    }
+	close(jobQueue)
 
-    wg.Wait()
-    duration := time.Since(startTime)
+	var wg sync.WaitGroup
 
-    throughput := float64(*numExecs) / duration.Seconds()
-    fmt.Println("\n========================================")
-    fmt.Printf("Tempo Total:             %v\n", duration)
-    fmt.Printf("Vazão (Throughput):      %.2f execuções/seg\n", throughput)
-    fmt.Printf("Latência Média/Instância: %v\n", time.Duration(int64(duration)/int64(*numExecs)))
-    fmt.Println("========================================")
+	start := time.Now()
+
+	for w := 0; w < *numThreads; w++ {
+		wg.Add(1)
+
+		go func(workerID int) {
+			defer wg.Done()
+
+			for range jobQueue {
+
+				points, err := LoadPoints(path)
+				if err != nil {
+					t.Errorf("worker %d load error: %v", workerID, err)
+					return
+				}
+
+				k, err := Kmeans(3, points, 2026)
+				if err != nil {
+					t.Errorf("worker %d kmeans error: %v", workerID, err)
+					return
+				}
+
+				if err := k.Fit(); err != nil {
+					t.Errorf("worker %d fit error: %v", workerID, err)
+					return
+				}
+			}
+		}(w)
+	}
+
+	wg.Wait()
+
+	total := time.Since(start)
+	throughput := float64(*numExecs) / total.Seconds()
+	avgLatency := total / time.Duration(*numExecs)
+
+	fmt.Println("========================================")
+	fmt.Printf("Total Time:   %.4fs\n", total.Seconds())
+	fmt.Printf("Throughput:   %.2f exec/s\n", throughput)
+	fmt.Printf("Avg Latency:  %.4f ms\n", avgLatency.Seconds()*1000)
+	fmt.Println("========================================")
+
+	fmt.Printf(
+		"CSV_RESULT,%d,%.4f,%.2f,%.4f\n",
+		*numThreads,
+		total.Seconds(),
+		throughput,
+		avgLatency.Seconds()*1000,
+	)
 }

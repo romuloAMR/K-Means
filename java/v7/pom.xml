@@ -30,6 +30,20 @@
             <groupId>org.openjdk.jcstress</groupId>
             <artifactId>jcstress-core</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.jmeter</groupId>
+            <artifactId>ApacheJMeter_core</artifactId>
+            <version>5.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.jmeter</groupId>
+            <artifactId>ApacheJMeter_java</artifactId>
+            <version>5.1</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
