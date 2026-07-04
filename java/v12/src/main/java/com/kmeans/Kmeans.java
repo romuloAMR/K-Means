@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 
 public class Kmeans {
     
@@ -14,6 +16,7 @@ public class Kmeans {
     private Point[] centroids;
     private final int numPoints;
     private final double epsilon;
+    private record PartialSum(double[][] sums, int[] counts) {}
     
     public Kmeans(int numClusters, List<Point> points, long seed) {
         if(points == null || points.size() < numClusters){
@@ -58,63 +61,55 @@ public class Kmeans {
         return true;
     }
 
-    public void updateCentroids(ExecutorService executor, int numWorkers) throws InterruptedException {
+    public void updateCentroids(ExecutorService executor, int numWorkers) throws InterruptedException, ExecutionException {
         int dim = this.points[0].getDimension();
-        double[][] centroidsSum = new double[numClusters][dim];
-        int[] counts = new int[numClusters];
-        Object mutex = new Object();
-        CountDownLatch latch = new CountDownLatch(numWorkers);
         int grainSize = (this.numPoints + numWorkers - 1) / numWorkers; 
+        List<Future<PartialSum>> futures = new ArrayList<>();
 
         for (int i = 0; i < numWorkers; i++) {
             final int start = i * grainSize;
             final int end = Math.min(start + grainSize, this.numPoints);
 
-            if (start >= this.numPoints) {
-                latch.countDown();
-                continue;
-            }
+            if (start >= this.numPoints) continue;
 
-            executor.execute(() -> {
-                try {
-                    double[][] localSums = new double[numClusters][dim];
-                    int[] localCounts = new int[numClusters];
-                    for (int j = start; j < end; j++) {
-                        int clusterId = this.assignments[j];
-                        double[] point = this.points[j].getCoordinates();
+            futures.add(executor.submit(() -> {
+                double[][] localSums = new double[numClusters][dim];
+                int[] localCounts = new int[numClusters];
+                for (int j = start; j < end; j++) {
+                    int clusterId = this.assignments[j];
+                    double[] point = this.points[j].getCoordinates();
 
-                        for (int d = 0; d < dim; d++) {
-                            localSums[clusterId][d] += point[d];
-                        }
-                        localCounts[clusterId]++;
+                    for (int d = 0; d < dim; d++) {
+                        localSums[clusterId][d] += point[d];
                     }
-
-                    synchronized (mutex) {
-                        for (int c = 0; c < numClusters; c++) {
-                            if (localCounts[c] > 0) {
-                                counts[c] += localCounts[c];
-                                for (int d = 0; d < dim; d++) {
-                                    centroidsSum[c][d] += localSums[c][d];
-                                }
-                            }
-                        }
-                    }
-                } finally {
-                    latch.countDown();
+                    localCounts[clusterId]++;
                 }
-            });
+
+                return new PartialSum(localSums, localCounts);
+            }));
         }
 
-        latch.await();
+        List<PartialSum> resultados = new ArrayList<>();
+        for (Future<PartialSum> future : futures) {
+            resultados.add(future.get());
+        }
 
         for (int c = 0; c < numClusters; c++) {
-            int totalCount = counts[c];
+            int totalCount = 0;
+            double[] sum = new double[dim];
+
+            for (PartialSum partial : resultados) {
+                totalCount += partial.counts()[c];
+                for (int d = 0; d < dim; d++) {
+                    sum[d] += partial.sums()[c][d];
+                }
+            }
 
             if (totalCount > 0) {
                 for (int d = 0; d < dim; d++) {
-                    centroidsSum[c][d] /= totalCount;
+                    sum[d] /= totalCount;
                 }
-                this.centroids[c] = new Point(centroidsSum[c]);
+                this.centroids[c] = new Point(sum);
             }
         }
     }
