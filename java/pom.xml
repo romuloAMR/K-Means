@@ -27,6 +27,7 @@
         <module>v8</module>
         <module>v9</module>
         <module>v10</module>
+        <module>v11</module>
     </modules>
 
     <dependencyManagement>
