@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.CompletableFuture;
 
 public class CSVReader {
 
@@ -62,13 +63,11 @@ public class CSVReader {
 
     public static List<Point> loadPoints(Path path) throws Exception {
         List<Segment> segments = getSegments(path);
-        List<Point> points = Collections.synchronizedList(new ArrayList<>());
-        
         int cores = Runtime.getRuntime().availableProcessors();
 
         try (ExecutorService executor = Executors.newFixedThreadPool(cores)) {
-            for (Segment segment : segments) {
-                executor.execute(() -> {
+            List<CompletableFuture<List<Point>>> futures = segments.stream()
+                .map(segment -> CompletableFuture.supplyAsync(() -> {
                     List<Point> pointsPartition = new ArrayList<>();
                     try (FileChannel ch = FileChannel.open(path, StandardOpenOption.READ)) {
                         ByteBuffer buffer = ch.map(FileChannel.MapMode.READ_ONLY, segment.start(), segment.size());
@@ -97,16 +96,21 @@ public class CSVReader {
                             }
                         }
                         
-                        points.addAll(pointsPartition);
+                        return pointsPartition;
                         
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        throw new RuntimeException(e);
                     }
-                });
-            }
-        }
+                }, executor))
+                .toList();
 
-        return points;
+            List<Point> allPoints = futures.stream()
+                .map(CompletableFuture::join)
+                .flatMap(List::stream)
+                .toList();
+
+            return allPoints;
+        }
     }
 
     public static Point processLine(byte[] lineBytes) {
