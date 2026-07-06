@@ -32,6 +32,7 @@
         <module>v13</module>
         <module>v14</module>
         <module>v15</module>
+        <module>v16</module>
     </modules>
 
     <dependencyManagement>

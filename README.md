@@ -16,7 +16,8 @@ Implementation and optimisation of the K-Means algorithm in Java and Go language
 - **v12:** Use of *Calleble and Futures*
 - **v13:** Use of *Fork/Join*
 - **v14:** Use of *Parallel Streams*
-- **v14:** Use of *CompletableFuture*
+- **v15:** Use of *CompletableFuture*
+- **v16:** Use of *ScopedValue*
 
 > [!NOTE]
 > From version 1 to version 5, the code was designed in a Java-like format; Go simply replicated this, which may result in lower-than-expected performance
@@ -43,6 +44,7 @@ Implementation and optimisation of the K-Means algorithm in Java and Go language
 | :construction:     | [Java v13](./java/v13/src/main/java/com/kmeans/) | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Java v14](./java/v14/src/main/java/com/kmeans/) | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Java v15](./java/v15/src/main/java/com/kmeans/) | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Java v16](./java/v16/src/main/java/com/kmeans/) | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Go v1](./go/v1/)                                | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Go v2](./go/v2/)                                | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Go v3](./go/v3/)                                | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |

@@ -3,6 +3,7 @@ package com.kmeans;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.lang.ScopedValue;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
@@ -11,13 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 public class CSVReader {
 
     private static final int SCALAR_FOR_WORKERS_READ = 1;
     private static final int ONE_MB = 1048576;
     private record Segment(long start, long size) {}
+    public static final ScopedValue<Path> CAMINHO_ARQUIVO = ScopedValue.newInstance();
 
     private static List<Segment> getSegments(Path path) throws IOException {
         List<Segment> segments = new ArrayList<>();
@@ -28,7 +30,7 @@ public class CSVReader {
             if (targetSize < ONE_MB) {
                 targetSize = ONE_MB;
             }
-            long currentPos = 0; 
+                long currentPos = 0; 
 
             while (currentPos < totalSize) {
                 long start = currentPos;
@@ -62,54 +64,58 @@ public class CSVReader {
 
     public static List<Point> loadPoints(Path path) throws Exception {
         List<Segment> segments = getSegments(path);
+        List<Point> points = new ArrayList<>();
+        
         int cores = Runtime.getRuntime().availableProcessors();
 
         try (ExecutorService executor = Executors.newFixedThreadPool(cores)) {
-            List<CompletableFuture<List<Point>>> futures = segments.stream()
-                .map(segment -> CompletableFuture.supplyAsync(() -> {
-                    List<Point> pointsPartition = new ArrayList<>();
-                    try (FileChannel ch = FileChannel.open(path, StandardOpenOption.READ)) {
-                        ByteBuffer buffer = ch.map(FileChannel.MapMode.READ_ONLY, segment.start(), segment.size());
-                    
-                        if (segment.start() == 0) {
-                            while (buffer.hasRemaining() && buffer.get() != '\n');
-                        }
-                    
-                        ByteArrayOutputStream lineBuffer = new ByteArrayOutputStream();
-                        while (buffer.hasRemaining()) {
-                            byte b = buffer.get();
-                            if (b == '\n') {
+            List<Future<List<Point>>> futures = new ArrayList<>();
+            for (Segment segment : segments) {
+                Future<List<Point>> future = executor.submit(() -> {
+                    return ScopedValue.where(CAMINHO_ARQUIVO, path).call(() -> {
+                        
+                        List<Point> pointsPartition = new ArrayList<>();
+                        Path caminhoAtual = CAMINHO_ARQUIVO.get();
+                        try (FileChannel ch = FileChannel.open(caminhoAtual, StandardOpenOption.READ)) {
+                            ByteBuffer buffer = ch.map(FileChannel.MapMode.READ_ONLY, segment.start(), segment.size());
+                        
+                            if (segment.start() == 0) {
+                                while (buffer.hasRemaining() && buffer.get() != '\n');
+                            }
+                        
+                            ByteArrayOutputStream lineBuffer = new ByteArrayOutputStream();
+                            while (buffer.hasRemaining()) {
+                                byte b = buffer.get();
+                                if (b == '\n') {
+                                    Point p = processLine(lineBuffer.toByteArray());
+                                    if (p != null) {
+                                        pointsPartition.add(p);
+                                    }
+                                    lineBuffer.reset();
+                                } else if (b != '\r') {
+                                    lineBuffer.write(b);
+                                }
+                            }
+                            if (lineBuffer.size() > 0) {
                                 Point p = processLine(lineBuffer.toByteArray());
                                 if (p != null) {
                                     pointsPartition.add(p);
                                 }
-                                lineBuffer.reset();
-                            } else if (b != '\r') {
-                                lineBuffer.write(b);
                             }
                         }
-                        if (lineBuffer.size() > 0) {
-                            Point p = processLine(lineBuffer.toByteArray());
-                            if (p != null) {
-                                pointsPartition.add(p);
-                            }
-                        }
-                        
                         return pointsPartition;
-                        
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }, executor))
-                .toList();
+                    });
+                });
+                
+                futures.add(future);
+            }
 
-            List<Point> allPoints = futures.stream()
-                .map(CompletableFuture::join)
-                .flatMap(List::stream)
-                .toList();
-
-            return allPoints;
+            for (Future<List<Point>> future : futures) {
+                points.addAll(future.get());
+            }
         }
+
+        return points;
     }
 
     public static Point processLine(byte[] lineBytes) {
