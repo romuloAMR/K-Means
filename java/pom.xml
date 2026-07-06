@@ -9,8 +9,8 @@
     <packaging>pom</packaging>
     
     <properties>
-        <maven.compiler.source>25</maven.compiler.source>
-        <maven.compiler.target>25</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jmh.version>1.37</jmh.version>
         <jcstress.version>0.16</jcstress.version>
@@ -34,6 +34,7 @@
         <module>v15</module>
         <module>v16</module>
         <module>v17</module>
+        <module>v18</module>
     </modules>
 
     <dependencyManagement>
