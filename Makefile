@@ -2,17 +2,19 @@ GO_DIR        := go
 JAVA_DIR      := java
 DATA_DIR      := data
 GO_VERSIONS   := v1 v2 v3 v4 v6 v7 v10
-JAVA_VERSIONS := v1 v2 v3 v4 v5 v6 v7 v8 v9 v10
+JAVA_VERSIONS := v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
 VERSION       ?= v1
 THREADS       ?= 4
 EXECS         ?= 20
 MAX_THREADS   ?= 10
 GOMAXPROCS    ?= $(shell nproc)
+
 BENCH_FLAGS_GO := \
-	-run=^$$ \
-	-bench=Benchmark \
-	-benchmem \
-	-count=5
+    -run=^$$ \
+    -bench=Benchmark \
+    -benchmem \
+    -count=5
+
 JAVA_GC_FLAGS_v1  :=
 JAVA_GC_FLAGS_v2  :=
 JAVA_GC_FLAGS_v3  :=
@@ -23,17 +25,26 @@ JAVA_GC_FLAGS_v7  :=
 JAVA_GC_FLAGS_v8  := -XX:+UseParallelGC -Xlog:gc
 JAVA_GC_FLAGS_v9  := -XX:+UseZGC -Xlog:gc
 JAVA_GC_FLAGS_v10 :=
+JAVA_GC_FLAGS_v11 :=
+JAVA_GC_FLAGS_v12 :=
+JAVA_GC_FLAGS_v13 :=
+JAVA_GC_FLAGS_v14 :=
+JAVA_GC_FLAGS_v15 :=
+JAVA_GC_FLAGS_v16 :=
+JAVA_GC_FLAGS_v17 := --enable-preview
+
 JAVA_GC_FLAGS := $(JAVA_GC_FLAGS_$(VERSION))
 
 .PHONY: all help \
-	create-data \
-	clean-profile \
-	run-go micro-go macro-go progression-go race-go profile-go profile-open macro-all-go \
-	run-java micro-java macro-java progression-java macro-all-java \
-	benchmark-all-go benchmark-all-java \
-	progression-all-go progression-all-java
+    create-data \
+    clean-profile \
+    run-go micro-go macro-go progression-go race-go profile-go profile-open macro-all-go \
+    run-java micro-java macro-java progression-java macro-all-java \
+    benchmark-all-go benchmark-all-java \
+    progression-all-go progression-all-java
 
 all: help
+
 help:
 	@echo ""
 	@echo "==================== GO ===================="
@@ -50,7 +61,7 @@ help:
 	@echo "make micro-java VERSION=v1"
 	@echo "make macro-java VERSION=v1 THREADS=8"
 	@echo "make progression-java VERSION=v1 MAX_THREADS=16"
-	@echo "make race-go VERSION=v1"
+	@echo "make race-java VERSION=v1"
 	@echo "make profile-java VERSION=v1"
 	@echo ""
 	@echo "================== GLOBAL =================="
@@ -178,9 +189,9 @@ profile-open: clean-profile profile-go
 run-java:
 	@echo "Running Java $(VERSION)..."
 	cd $(JAVA_DIR) && \
+	MAVEN_OPTS="$(JAVA_GC_FLAGS)" \
 	mvn compile exec:java \
-	-pl $(VERSION) \
-	-Dexec.jvmArgs="$(JAVA_GC_FLAGS)"
+	-pl $(VERSION)
 
 micro-java:
 	@echo "Running Java microbenchmarks ($(VERSION))..."
@@ -194,7 +205,7 @@ race-java:
 	@echo "Concurrency Test Java $(VERSION)..."
 	cd $(JAVA_DIR) && \
 	mvn clean package -pl $(VERSION) -Pjcstress && \
-	java -jar $(VERSION)/target/jcstress-tests.jar -m quick \
+	java $(JAVA_GC_FLAGS) -jar $(VERSION)/target/jcstress-tests.jar -m quick \
 	| tee $(VERSION)/race.txt && \
 	find $(JAVA_DIR) -name "*.bin.gz" -delete
 
