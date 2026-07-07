@@ -24,7 +24,7 @@ Implementation and optimisation of the K-Means algorithm in Java and Go language
 > From version 1 to version 5, the code was designed in a Java-like format; Go simply replicated this, which may result in lower-than-expected performance
 
 > [!NOTE]
-> Go has no equivalent in the following versions: V5, V8, V9, V11.
+> Go has no equivalent in the following versions: V5, V8, V9, V11, V13, V14, V15, V16, V18.
 
 ## Table Versions:
 
@@ -55,6 +55,7 @@ Implementation and optimisation of the K-Means algorithm in Java and Go language
 | :construction:     | [Go v7](./go/v7/)                                | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Go v10](./go/v10/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Go v12](./go/v10/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Go v17](./go/v17/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 
 ## Prerequisites to Run:
 
@@ -75,5 +76,5 @@ cd K-Means
 ## Runs:
 To run the programs, simply use `make` or `make help` to view the options and select the one you want like:
 ```sh
-make run-java-v2
+make run-java VERSION=v2
 ```
