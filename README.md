@@ -24,7 +24,7 @@ Implementation and optimisation of the K-Means algorithm in Java and Go language
 > From version 1 to version 5, the code was designed in a Java-like format; Go simply replicated this, which may result in lower-than-expected performance
 
 > [!NOTE]
-> Go has no equivalent in the following versions: V5, V8, V9.
+> Go has no equivalent in the following versions: V5, V8, V9, V11.
 
 ## Table Versions:
 
@@ -54,6 +54,7 @@ Implementation and optimisation of the K-Means algorithm in Java and Go language
 | :construction:     | [Go v6](./go/v6/)                                | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Go v7](./go/v7/)                                | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | :construction:     | [Go v10](./go/v10/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| :construction:     | [Go v12](./go/v10/)                              | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 
 ## Prerequisites to Run:
 
