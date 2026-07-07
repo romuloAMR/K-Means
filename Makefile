@@ -1,7 +1,7 @@
 GO_DIR        := go
 JAVA_DIR      := java
 DATA_DIR      := data
-GO_VERSIONS   := v1 v2 v3 v4 v6 v7 v10 v12
+GO_VERSIONS   := v1 v2 v3 v4 v6 v7 v10 v12 v17
 JAVA_VERSIONS := v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
 VERSION       ?= v1
 THREADS       ?= 4
