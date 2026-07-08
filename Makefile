@@ -36,6 +36,20 @@ JAVA_GC_FLAGS_v14 :=
 JAVA_GC_FLAGS_v15 :=
 JAVA_GC_FLAGS_v16 :=
 JAVA_GC_FLAGS_v17 := --enable-preview
+JAVA_GC_FLAGS_v18 := --add-opens=java.base/java.lang=ALL-UNNAMED \
+    --add-opens=java.base/java.lang.invoke=ALL-UNNAMED \
+    --add-opens=java.base/java.lang.reflect=ALL-UNNAMED \
+    --add-opens=java.base/java.io=ALL-UNNAMED \
+    --add-opens=java.base/java.net=ALL-UNNAMED \
+    --add-opens=java.base/java.nio=ALL-UNNAMED \
+    --add-opens=java.base/java.util=ALL-UNNAMED \
+    --add-opens=java.base/java.util.concurrent=ALL-UNNAMED \
+    --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED \
+    --add-opens=java.base/sun.nio.ch=ALL-UNNAMED \
+    --add-opens=java.base/sun.nio.cs=ALL-UNNAMED \
+    --add-opens=java.base/sun.security.action=ALL-UNNAMED \
+    --add-opens=java.base/sun.util.calendar=ALL-UNNAMED \
+    --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED
 
 JAVA_GC_FLAGS := $(JAVA_GC_FLAGS_$(VERSION))
 
