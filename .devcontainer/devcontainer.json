@@ -12,6 +12,10 @@
                 "name": "JavaSE-25",
                 "path": "/usr/lib/jvm/java-25-latest",
                 "default": true
+            },
+            {
+                "name": "JavaSE-17",
+                "path": "/usr/lib/jvm/java-17-latest"
             }
         ],
         "java.compile.nullAnalysis.mode": "automatic",

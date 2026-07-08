@@ -2,18 +2,22 @@ GO_DIR        := go
 JAVA_DIR      := java
 DATA_DIR      := data
 GO_VERSIONS   := v1 v2 v3 v4 v6 v7 v10 v12 v17
-JAVA_VERSIONS := v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17
+JAVA_VERSIONS := v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13 v14 v15 v16 v17 v18
 VERSION       ?= v1
 THREADS       ?= 4
 EXECS         ?= 20
 MAX_THREADS   ?= 10
 GOMAXPROCS    ?= $(shell nproc)
 
+DEFAULT_JAVA_HOME := /usr/lib/jvm/java-25-latest
+JAVA_HOME_v18 := /usr/lib/jvm/java-17-latest
+CURRENT_JAVA_HOME = $(if $(JAVA_HOME_$(VERSION)),$(JAVA_HOME_$(VERSION)),$(DEFAULT_JAVA_HOME))
+
 BENCH_FLAGS_GO := \
-    -run=^$$ \
-    -bench=Benchmark \
-    -benchmem \
-    -count=5
+	-run=^$$ \
+	-bench=Benchmark \
+	-benchmem \
+	-count=7
 
 JAVA_GC_FLAGS_v1  :=
 JAVA_GC_FLAGS_v2  :=
@@ -36,12 +40,12 @@ JAVA_GC_FLAGS_v17 := --enable-preview
 JAVA_GC_FLAGS := $(JAVA_GC_FLAGS_$(VERSION))
 
 .PHONY: all help \
-    create-data \
-    clean-profile \
-    run-go micro-go macro-go progression-go race-go profile-go profile-open macro-all-go \
-    run-java micro-java macro-java progression-java macro-all-java \
-    benchmark-all-go benchmark-all-java \
-    progression-all-go progression-all-java
+	create-data \
+	clean-profile \
+	run-go micro-go macro-go progression-go race-go profile-go profile-open macro-all-go \
+	run-java micro-java macro-java progression-java macro-all-java \
+	benchmark-all-go benchmark-all-java \
+	progression-all-go progression-all-java
 
 all: help
 
@@ -59,7 +63,7 @@ help:
 	@echo "=================== JAVA ==================="
 	@echo "make run-java VERSION=v1"
 	@echo "make micro-java VERSION=v1"
-	@echo "make macro-java VERSION=v1 THREADS=8"
+	@echo "make macro-java VERSION=v1 THREADS=8 EXECS=32"
 	@echo "make progression-java VERSION=v1 MAX_THREADS=16"
 	@echo "make race-java VERSION=v1"
 	@echo "make profile-java VERSION=v1"
@@ -189,6 +193,7 @@ profile-open: clean-profile profile-go
 run-java:
 	@echo "Running Java $(VERSION)..."
 	cd $(JAVA_DIR) && \
+	export JAVA_HOME=$(CURRENT_JAVA_HOME) && \
 	MAVEN_OPTS="$(JAVA_GC_FLAGS)" \
 	mvn compile exec:java \
 	-pl $(VERSION)
@@ -196,39 +201,47 @@ run-java:
 micro-java:
 	@echo "Running Java microbenchmarks ($(VERSION))..."
 	cd $(JAVA_DIR) && \
+	export JAVA_HOME=$(CURRENT_JAVA_HOME) && \
 	mvn clean package -pl $(VERSION) -Pjmh && \
-	java $(JAVA_GC_FLAGS) \
+	$(CURRENT_JAVA_HOME)/bin/java $(JAVA_GC_FLAGS) \
 	-jar $(VERSION)/target/benchmarks.jar \
 	| tee $(VERSION)/microbenchmark.txt
 
 race-java:
 	@echo "Concurrency Test Java $(VERSION)..."
 	cd $(JAVA_DIR) && \
+	export JAVA_HOME=$(CURRENT_JAVA_HOME) && \
 	mvn clean package -pl $(VERSION) -Pjcstress && \
-	java $(JAVA_GC_FLAGS) -jar $(VERSION)/target/jcstress-tests.jar -m quick \
+	$(CURRENT_JAVA_HOME)/bin/java $(JAVA_GC_FLAGS) -jar $(VERSION)/target/jcstress-tests.jar -m quick \
 	| tee $(VERSION)/race.txt && \
 	find $(JAVA_DIR) -name "*.bin.gz" -delete
 
 define run_jmeter
 	cd $(JAVA_DIR) && \
+	export JAVA_HOME=$(CURRENT_JAVA_HOME) && \
 	mvn clean package -pl $(VERSION) -P app-exec && \
 	mkdir -p $(VERSION) && \
 	mkdir -p /opt/apache-jmeter-5.6.3/lib/ext && \
-	cp $(VERSION)/target/*.jar \
-		/opt/apache-jmeter-5.6.3/lib/ext/ && \
-	JVM_ARGS="$(JAVA_GC_FLAGS)" \
+	rm -f /opt/apache-jmeter-5.6.3/lib/ext/v*.jar && \
+	cp $(VERSION)/target/*.jar /opt/apache-jmeter-5.6.3/lib/ext/ && \
+	echo 'export JAVA_HOME="$(CURRENT_JAVA_HOME)"' > /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
+	echo 'export HEAP="-Xms6g -Xmx6g"' >> /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
+	echo 'export GC_ALGO="-XX:+UseG1GC"' >> /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
+	echo 'export JVM_ARGS="$(JAVA_GC_FLAGS)"' >> /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
+	chmod +x /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
 	/opt/apache-jmeter-5.6.3/bin/jmeter.sh \
 		-Djava.awt.headless=true \
 		-n \
 		-t ../kmeans_test.jmx \
 		-Jusuarios=$(THREADS) \
+		-Jexecs=$(EXECS) \
 		-Jjmeter.save.saveservice.output_format=csv \
 		-Jjmeter.save.saveservice.print_field_names=true \
 		-l $(VERSION)/results.jtl
 endef
 
 macro-java:
-	@echo "Running Java macrobenchmark ($(VERSION))..."
+	@echo "Running Java macrobenchmark ($(VERSION)) com JDK $(CURRENT_JAVA_HOME)..."
 	$(call run_jmeter)
 
 progression-java:
@@ -245,7 +258,7 @@ progression-java:
 	for t in $$(seq 1 $(MAX_THREADS)); do \
 		echo "======================================"; \
 		echo "THREADS=$$t"; \
-		$(MAKE) macro-java VERSION=$(VERSION) THREADS=$$t; \
+		$(MAKE) macro-java VERSION=$(VERSION) THREADS=$$t EXECS=$$t; \
 		JTL="$(JAVA_DIR)/$(VERSION)/results.jtl"; \
 		\
 		cp $$JTL /tmp/current_jmeter.jtl; \
@@ -256,7 +269,7 @@ progression-java:
 		else \
 			tail -n +2 /tmp/current_jmeter.jtl >> $(JAVA_DIR)/$(VERSION)/all_results.jtl; \
 		fi; \
-		\
+        \
 		AVG=$$(awk -F',' 'NR>1 {sum+=$$2; n++} END {if(n>0) print sum/n; else print 0}' /tmp/current_jmeter.jtl); \
 		COUNT=$$(awk -F',' 'NR>1 {n++} END {print n}' /tmp/current_jmeter.jtl); \
 		TOTAL_MS=$$(awk -F',' '\
@@ -274,19 +287,19 @@ profile-java:
 	@echo "Generating Java profile ($(VERSION))..."
 	@mkdir -p $(JAVA_DIR)/$(VERSION)/profile
 	cd $(JAVA_DIR) && \
+	export JAVA_HOME=$(CURRENT_JAVA_HOME) && \
 	mvn clean package -pl $(VERSION) -P app-exec && \
-	JVM_ARGS="\
-	$(JAVA_GC_FLAGS) \
-	-XX:StartFlightRecording=\
-	filename=$(VERSION)/profile/profile.jfr,\
-	settings=profile,\
-	dumponexit=true \
-	" \
+	echo 'export JAVA_HOME="$(CURRENT_JAVA_HOME)"' > /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
+	echo 'export HEAP="-Xms6g -Xmx6g"' >> /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
+	echo 'export GC_ALGO="-XX:+UseG1GC"' >> /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
+	echo 'export JVM_ARGS="$(JAVA_GC_FLAGS) -XX:StartFlightRecording=filename=$(VERSION)/profile/profile.jfr,settings=profile,dumponexit=true"' >> /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
+	chmod +x /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
 	/opt/apache-jmeter-5.6.3/bin/jmeter.sh \
 		-Djava.awt.headless=true \
 		-n \
 		-t ../kmeans_test.jmx \
-		-Jusuarios=$(THREADS)
+		-Jusuarios=$(THREADS) \
+		-Jexecs=$(EXECS)
 
 # GLOBAL - GO
 benchmark-all-go:
@@ -326,7 +339,7 @@ macro-all-java:
 	@for v in $(JAVA_VERSIONS); do \
 		echo "======================================"; \
 		echo "JAVA MACRO $$v"; \
-		$(MAKE) macro-java VERSION=$$v THREADS=$(THREADS); \
+		$(MAKE) macro-java VERSION=$$v THREADS=$(THREADS) EXECS=$(EXECS); \
 		sleep 10; \
 	done
 
