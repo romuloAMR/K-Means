@@ -239,7 +239,7 @@ define run_jmeter
 	rm -f /opt/apache-jmeter-5.6.3/lib/ext/v*.jar && \
 	cp $(VERSION)/target/*.jar /opt/apache-jmeter-5.6.3/lib/ext/ && \
 	echo 'export JAVA_HOME="$(CURRENT_JAVA_HOME)"' > /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
-	echo 'export HEAP="-Xms6g -Xmx6g"' >> /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
+	echo 'export HEAP="-Xms16g -Xmx16g"' >> /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
 	echo 'export GC_ALGO="-XX:+UseG1GC"' >> /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
 	echo 'export JVM_ARGS="$(JAVA_GC_FLAGS)"' >> /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
 	chmod +x /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
@@ -298,22 +298,13 @@ progression-java:
 	done
 
 profile-java:
-	@echo "Generating Java profile ($(VERSION))..."
+	@echo "Generating Standalone Java profile ($(VERSION))..."
 	@mkdir -p $(JAVA_DIR)/$(VERSION)/profile
 	cd $(JAVA_DIR) && \
 	export JAVA_HOME=$(CURRENT_JAVA_HOME) && \
-	mvn clean package -pl $(VERSION) -P app-exec && \
-	echo 'export JAVA_HOME="$(CURRENT_JAVA_HOME)"' > /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
-	echo 'export HEAP="-Xms6g -Xmx6g"' >> /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
-	echo 'export GC_ALGO="-XX:+UseG1GC"' >> /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
-	echo 'export JVM_ARGS="$(JAVA_GC_FLAGS) -XX:StartFlightRecording=filename=$(VERSION)/profile/profile.jfr,settings=profile,dumponexit=true"' >> /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
-	chmod +x /opt/apache-jmeter-5.6.3/bin/setenv.sh && \
-	/opt/apache-jmeter-5.6.3/bin/jmeter.sh \
-		-Djava.awt.headless=true \
-		-n \
-		-t ../kmeans_test.jmx \
-		-Jusuarios=$(THREADS) \
-		-Jexecs=$(EXECS)
+	MAVEN_OPTS="$(JAVA_GC_FLAGS) -XX:StartFlightRecording=filename=$(VERSION)/profile/profile.jfr,settings=profile,dumponexit=true" \
+	mvn compile exec:java \
+	-pl $(VERSION)
 
 # GLOBAL - GO
 benchmark-all-go:

@@ -154,7 +154,7 @@ public class Kmeans {
     }
 
     public void fit(int maxIterations, int numWorkers) {
-        int threshold = Math.max(100, this.numPoints / numWorkers);
+        int threshold = Math.max(100, this.numPoints / (numWorkers*8));
         ForkJoinPool pool = new ForkJoinPool(numWorkers);
         
         try {
