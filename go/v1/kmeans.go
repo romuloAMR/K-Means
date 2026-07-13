@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"math"
-	"math/rand/v2"
 )
 
 type kmeans struct {
@@ -11,7 +10,6 @@ type kmeans struct {
 	points []Point
 	clusters [][]Point
 	centroids []Point
-	rng *rand.Rand
 }
 
 func Kmeans(numClusters int, points []Point, seed uint64) (*kmeans, error) {
@@ -20,32 +18,29 @@ func Kmeans(numClusters int, points []Point, seed uint64) (*kmeans, error) {
 		return nil, errors.New("number of clusters greater than the number of points or zero points")
 	}
 
-	pcg := rand.NewPCG(seed, seed+1) 
-    rng := rand.New(pcg)
-
 	instance := &kmeans{
 		numClusters: numClusters,
 		points: points,
 		clusters: make([][]Point, numClusters),
 		centroids: make([]Point, numClusters),
-		rng: rng,
 	}
+
+	indices := []int{0, 1, 2}
+	instance.initCentroids(indices)
 
 	return instance, nil
 }
 
-func (k *kmeans) randCentroids() {
-	numPoints := len(k.points)
-	indices := k.rng.Perm(numPoints)
-    for i := 0; i < k.numClusters; i++ {
-        k.centroids[i] = k.points[indices[i]]
-    }
+func (k *kmeans) initCentroids(indices []int) {
+	for i := 0; i < k.numClusters; i++ {
+		k.centroids[i] = k.points[indices[i]]
+	}
 }
 
 func (k *kmeans) updateCentroids() error {
 	newCentroids := make([]Point, k.numClusters)
 
-	for i := range k.numClusters {
+	for i := 0; i < k.numClusters; i++ {
 		cluster := k.clusters[i]
 
 		if len(cluster) == 0 {
@@ -77,7 +72,7 @@ func (k *kmeans) findNearestCentroid(p *Point) (int, error) {
 	minDistance := math.MaxFloat64
 	nearestIndex := -1
 
-	for i := range k.numClusters {
+	for i := 0; i < k.numClusters; i++ {
 		dist, err := p.SqDistanceTo(&k.centroids[i])
 
 		if err != nil {
@@ -95,7 +90,7 @@ func (k *kmeans) findNearestCentroid(p *Point) (int, error) {
 
 func (k *kmeans) centroidsConverged(last []Point, now []Point) (bool, error) {
 	epsilon := 1e-10
-	for i := range k.numClusters {
+	for i := 0; i < k.numClusters; i++ {
 		dist, err := last[i].SqDistanceTo(&now[i])
 
 		if err != nil {
@@ -120,7 +115,6 @@ func (k *kmeans) Fit() error {
 }
 
 func (k *kmeans) FitMaxIterations(maxIterations int) error {
-	k.randCentroids()
 	iteration := 0
 	lastCentroids := make([]Point, k.numClusters)
 

@@ -1,0 +1,12 @@
+[project]
+name = "k-means"
+version = "0.1.0"
+description = "Implementation and optimisation of the K-Means algorithm in Java and Go language"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "jupyterlab>=4.5.7",
+    "matplotlib>=3.10.9",
+    "pandas>=3.0.2",
+    "plotly>=6.7.0",
+]

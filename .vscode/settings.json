@@ -1,3 +1,18 @@
 {
-    "java.configuration.updateBuildConfiguration": "automatic"
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "files.exclude": {
+        "**/target": true
+    },
+    "search.exclude": {
+        "**/target": true
+    },
+    "java.project.resourceFilters": [
+        "node_modules",
+        ".git",
+        "target"
+    ],
+    "problems.visibility": "focused", 
+    "files.watcherExclude": {
+        "**/target/**": true
+    }
 }
